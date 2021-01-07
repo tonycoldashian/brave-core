@@ -92,6 +92,7 @@ import org.chromium.chrome.browser.toolbar.top.BraveToolbarLayout;
 import org.chromium.chrome.browser.util.BraveDbUtil;
 import org.chromium.chrome.browser.util.BraveReferrer;
 import org.chromium.chrome.browser.util.PackageUtils;
+import org.chromium.chrome.browser.vpn.VpnCalloutDialogFragment;
 import org.chromium.chrome.browser.widget.crypto.binance.BinanceAccountBalance;
 import org.chromium.chrome.browser.widget.crypto.binance.BinanceWidgetManager;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -424,6 +425,15 @@ public abstract class BraveActivity<C extends ChromeActivityComponent>
                     calender.getTimeInMillis());
         }
         checkSetDefaultBrowserModal();
+        if ((SharedPreferencesManager.getInstance().readInt(
+                     BravePreferenceKeys.BRAVE_APP_OPEN_COUNT)
+                            == 1
+                    && !PackageUtils.isFirstInstall(this))
+                || (SharedPreferencesManager.getInstance().readInt(
+                            BravePreferenceKeys.BRAVE_APP_OPEN_COUNT)
+                                == 7
+                        && PackageUtils.isFirstInstall(this))) {
+            showVpnCalloutDialog();
     }
 
     private void checkSetDefaultBrowserModal() {
@@ -704,6 +714,12 @@ public abstract class BraveActivity<C extends ChromeActivityComponent>
         CrossPromotionalModalDialogFragment mCrossPromotionalModalDialogFragment = new CrossPromotionalModalDialogFragment();
         mCrossPromotionalModalDialogFragment.setCancelable(false);
         mCrossPromotionalModalDialogFragment.show(getSupportFragmentManager(), "CrossPromotionalModalDialogFragment");
+    }
+
+    private void showVpnCalloutDialog() {
+        VpnCalloutDialogFragment mVpnCalloutDialogFragment = new VpnCalloutDialogFragment();
+        mVpnCalloutDialogFragment.setCancelable(false);
+        mVpnCalloutDialogFragment.show(getSupportFragmentManager(), "VpnCalloutDialogFragment");
     }
 
     static public ChromeTabbedActivity getChromeTabbedActivity() {

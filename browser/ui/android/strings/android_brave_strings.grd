@@ -1705,6 +1705,27 @@ until they verify, or until 90 days have passed.
       <message name="IDS_CONTINUE_TO_LOGIN" desc="Uphold continue to login text">
         continue to login
       </message>
+      <message name="IDS_BRAVE_FIREWALL_VPN" desc="VPN title text">
+        Brave Firewall + VPN
+      </message>
+      <message name="IDS_ENABLE" desc="VPN callout text">
+        Enable
+      </message>
+      <message name="IDS_POWERED_BY" desc="VPN text">
+        Powered by
+      </message>
+      <message name="IDS_VPN_MODAL_TEXT_1" desc="VPN modal text">
+        Block ads &amp; trackers across all apps
+      </message>
+      <message name="IDS_VPN_MODAL_TEXT_2" desc="VPN modal text">
+        Secures all connections
+      </message>
+      <message name="IDS_VPN_MODAL_TEXT_3" desc="VPN modal text">
+        Fast and unlimited up to 100 Mbps
+      </message>
+      <message name="IDS_VPN_MODAL_TEXT_4" desc="VPN modal text">
+        24/7 support
+      </message>
     </messages>
   </release>
 </grit>
