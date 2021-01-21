@@ -6,21 +6,21 @@ import * as React from 'react'
 import { bindActionCreators, Dispatch } from 'redux'
 import { connect } from 'react-redux'
 import { WalletAddIcon, BatColorIcon } from 'brave-ui/components/icons'
-import { WalletWrapper, WalletSummary, WalletSummarySlider, WalletPanel } from '../../../ui/components'
-import { Provider } from '../../../ui/components/profile'
-import { NotificationType, WalletState } from '../../../ui/components/walletWrapper'
-import { RewardsNotificationType } from '../constants/rewards_panel_types'
-import { Type as AlertType } from '../../../ui/components/alert'
-import { RewardsOptInModal, RewardsTourModal } from '../../../shared/components/onboarding'
+import { WalletWrapper, WalletSummary, WalletSummarySlider, WalletPanel } from '../../../../ui/components'
+import { Provider } from '../../../../ui/components/profile'
+import { NotificationType, WalletState } from '../../../../ui/components/walletWrapper'
+import { RewardsNotificationType } from '../../background/constants/rewards_panel_types'
+import { Type as AlertType } from '../../../../ui/components/alert'
+import { RewardsOptInModal, RewardsTourModal } from '../../../../shared/components/onboarding'
 
 // Utils
-import * as rewardsPanelActions from '../actions/rewards_panel_actions'
-import * as utils from '../utils'
-import { upholdMinimumBalance } from '../../../shared/lib/uphold'
+import * as rewardsPanelActions from '../../background/actions/rewards_panel_actions'
+import * as utils from '../../background/utils'
+import { upholdMinimumBalance } from '../../../../shared/lib/uphold'
 
 import * as style from './panel.style'
 
-import { getMessage } from '../background/api/locale_api'
+import { getMessage } from '../../background/api/locale_api'
 
 interface Props extends RewardsExtension.ComponentProps {
   tabId: number,

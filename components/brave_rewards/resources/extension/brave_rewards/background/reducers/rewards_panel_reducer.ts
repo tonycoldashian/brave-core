@@ -3,10 +3,10 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { OnboardingCompletedStore } from '../../../../shared/lib/onboarding_completed_store'
-import { types } from '../../constants/rewards_panel_types'
+import { types } from '../constants/rewards_panel_types'
 import { Reducer } from 'redux'
 import { setBadgeText } from '../browserAction'
-import { isPublisherConnectedOrVerified } from '../../utils'
+import { isPublisherConnectedOrVerified } from '../utils'
 
 const onboardingCompletedStore = new OnboardingCompletedStore()
 

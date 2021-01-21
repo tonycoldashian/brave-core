@@ -5,7 +5,7 @@
 import * as React from 'react'
 import { bindActionCreators, Dispatch } from 'redux'
 import { connect } from 'react-redux'
-import { getTabData } from '../background/api/tabs_api'
+import { getTabData } from '../../background/api/tabs_api'
 
 import { BAPDeprecationPopup } from '../../../shared/components/bap_deprecation'
 
@@ -13,8 +13,8 @@ import { BAPDeprecationPopup } from '../../../shared/components/bap_deprecation'
 import Panel from './panel'
 
 // Utils
-import * as utils from '../utils'
-import * as rewardsPanelActions from '../actions/rewards_panel_actions'
+import * as utils from '../../background/utils'
+import * as rewardsPanelActions from '../../background/actions/rewards_panel_actions'
 
 interface Props extends RewardsExtension.ComponentProps {
 }

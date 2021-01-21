@@ -4,8 +4,8 @@
 
 import BigNumber from 'bignumber.js'
 
-import { getMessage } from './background/api/locale_api'
-import { WalletState } from '../../ui/components/walletWrapper'
+import { getMessage } from './api/locale_api'
+import { WalletState } from '../../../ui/components/walletWrapper'
 
 export const convertBalance = (tokens: number, rate: number): string => {
   if (tokens === 0) {

@@ -4,5 +4,5 @@
 
 import { bindActionCreators } from 'redux'
 import store from '../store'
-import * as rewardsPanelActions from '../../actions/rewards_panel_actions'
+import * as rewardsPanelActions from './rewards_panel_actions'
 export default bindActionCreators(rewardsPanelActions, store.dispatch)

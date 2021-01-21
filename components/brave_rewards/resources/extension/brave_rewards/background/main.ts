@@ -2,15 +2,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import rewardsPanelActions from './background/actions/rewardsPanelActions'
+import rewardsPanelActions from './actions/rewardsPanelActions'
 
-import './background/store'
-import './background/events/rewardsEvents'
-import './background/events/tabEvents'
+import './store'
+import './events/rewardsEvents'
+import './events/tabEvents'
 
-import batIconOn18Url from './img/rewards-on.png'
-import batIconOn36Url from './img/rewards-on@2x.png'
-import batIconOn54Url from './img/rewards-on@3x.png'
+import batIconOn18Url from '../img/rewards-on.png'
+import batIconOn36Url from '../img/rewards-on@2x.png'
+import batIconOn54Url from '../img/rewards-on@3x.png'
 
 const iconOn = {
   path: {
