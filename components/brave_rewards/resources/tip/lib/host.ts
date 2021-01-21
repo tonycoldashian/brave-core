@@ -4,7 +4,7 @@
 
 import { OnboardingCompletedStore } from '../../shared/lib/onboarding_completed_store'
 
-import { createStateManager } from './state_manager'
+import { createStateManager } from '../../shared/lib/state_manager'
 
 import {
   Host,
