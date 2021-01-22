@@ -2,9 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import { OnboardingCompletedStore } from '../../../../shared/lib/onboarding_completed_store'
 import { createStateManager } from '../../../../shared/lib/state_manager'
 
 import { Host, HostState } from './interfaces'
+
+const braveExtensionId = 'mnojpmjdmbbfmejpflffifhffcmidifd'
 
 function getMessage (key: string) {
   // In order to normalize messages across extensions and WebUI, replace all
@@ -18,8 +21,138 @@ function getMessage (key: string) {
   return chrome.i18n.getMessage(key, substitutions) || `i18n: ${key}`
 }
 
+function whenReady () {
+  return new Promise<void>((resolve) => {
+    chrome.braveRewards.isInitialized((initialized) => {
+      if (initialized) {
+        resolve()
+      }
+    })
+    chrome.braveRewards.initialized.addListener(() => {
+      resolve()
+    })
+  })
+}
+
+function isGreaselionPublisherURL (url: string) {
+  let hostname = ''
+  try {
+    hostname = new URL(url).hostname
+    if (!hostname) {
+      return false
+    }
+  } catch {
+    return false
+  }
+
+  const domains = [
+    'github.com',
+    'reddit.com',
+    'twitch.tv',
+    'twitter.com',
+    'vimeo.com',
+    'youtube.com'
+  ]
+
+  return domains.some((domain) => (
+    hostname === domain || hostname.endsWith(`.${ domain }`)
+  ))
+}
+
 export function createHost (): Host {
+  const onboardingCompletedStore = new OnboardingCompletedStore()
   const stateManager = createStateManager<HostState>({})
+
+  function loadPublisherInfo () {
+    // TODO(zenparsing): Introduce a locale-storage based cache, keyed on tab
+    // URL, with expiration and a max size.
+
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const [tab] = tabs || []
+
+      // Don't retreive publisher info for incognito tabs
+      if (!tab || !tab.id || !tab.url || !tab.active || tab.incognito) {
+        stateManager.update({ currentTab: undefined })
+        return
+      }
+
+      stateManager.update({ currentTab: tab.id })
+
+      if (isGreaselionPublisherURL(tab.url)) {
+        // Send a message to the brave extension requesting publisher info
+        // for the current tab. The brave extension will dispatch the request
+        // to the appropriate content script loaded by Greaselion.
+        chrome.runtime.sendMessage(braveExtensionId, {
+          type: 'GetPublisherPanelInfo',
+          tabId: tab.id
+        })
+      } else {
+        chrome.braveRewards.getPublisherData(
+          tab.id, tab.url, tab.favIconUrl || '', '')
+      }
+
+      // TODO(zenparsing): How do we get the updated publisher data?
+    })
+  }
+
+  function handleActionURL () {
+    const { hash } = window.location
+    if (!hash) {
+      return
+    }
+    const match = /^#grant_(.)+/.exec(hash)
+    if (match) {
+      const promotion = match[1]
+      chrome.braveRewards.claimPromotion(promotion, () => {
+        // TODO: this.actions.onClaimPromotion(properties)
+      })
+    }
+  }
+
+  function initialize () {
+    chrome.braveRewards.fetchBalance((balance) => {
+      const wallets = balance.wallets || {}
+      stateManager.update({
+        balanceInfo: {
+          total: balance.total,
+          legacyUserFunds: Number(wallets['anonymous']) || 0,
+          virtualTokens: Number(wallets['blinded']) || 0,
+          externalWallet: Number(wallets['uphold']) || 0
+        }
+      })
+    })
+
+    chrome.braveRewards.onlyAnonWallet((onlyAnonWallet) => {
+      stateManager.update({ onlyAnonWallet })
+    })
+
+    chrome.braveRewards.getPrefs((prefs) => {
+      stateManager.update({ prefs })
+    })
+
+    chrome.braveRewards.getRewardsParameters((parameters) => {
+      stateManager.update({
+        exchangeRate: parameters.rate,
+        autoContributeChoices: parameters.autoContributeChoices
+      })
+    })
+
+    chrome.braveRewards.shouldShowOnboarding((showOnboarding) => {
+      stateManager.update({ showOnboarding })
+    })
+
+    loadPublisherInfo()
+
+    handleActionURL()
+  }
+
+  whenReady().then(() => {
+    initialize()
+  }).catch((err) => {
+    console.error(err)
+  })
+
+  stateManager.addListener(console.log)
 
   return {
 
@@ -27,9 +160,25 @@ export function createHost (): Host {
       return stateManager.getState()
     },
 
-    getString (key: string) {
-      return getMessage(key)
-    }
+    getString: getMessage,
+
+    saveOnboardingResult (result) {
+      chrome.braveRewards.saveOnboardingResult(result)
+      stateManager.update({ showOnboarding: false })
+      onboardingCompletedStore.save()
+    },
+
+    updatePrefs (prefs) {
+      chrome.braveRewards.updatePrefs(prefs)
+      const currentPrefs = stateManager.getState().prefs
+      if (currentPrefs) {
+        stateManager.update({
+          prefs: { ...currentPrefs, ...prefs }
+        })
+      }
+    },
+
+    addListener: stateManager.addListener
 
   }
 }

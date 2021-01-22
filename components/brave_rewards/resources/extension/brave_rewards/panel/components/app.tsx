@@ -6,14 +6,17 @@ import * as React from 'react'
 
 import { WithThemeVariables } from '../../../../shared/components/with_theme_variables'
 import { LegacyThemeProvider } from './legacy_theme_provider'
+import { Onboarding } from './onboarding'
+
+import * as style from './app.style'
 
 export function App () {
   return (
     <WithThemeVariables>
       <LegacyThemeProvider>
-        <div>
-          Hello world
-        </div>
+        <style.root>
+          <Onboarding />
+        </style.root>
       </LegacyThemeProvider>
     </WithThemeVariables>
   )
