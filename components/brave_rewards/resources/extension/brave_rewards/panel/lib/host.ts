@@ -5,7 +5,7 @@
 import { OnboardingCompletedStore } from '../../../../shared/lib/onboarding_completed_store'
 import { createStateManager } from '../../../../shared/lib/state_manager'
 
-import { Host, HostState } from './interfaces'
+import { Host, HostState, PromotionStatus } from './interfaces'
 
 const braveExtensionId = 'mnojpmjdmbbfmejpflffifhffcmidifd'
 
@@ -141,6 +141,55 @@ export function createHost (): Host {
       stateManager.update({ showOnboarding })
     })
 
+    chrome.braveRewards.getPendingContributionsTotal(((amount) => {
+      stateManager.update({ pendingContributionAmount: amount })
+    }))
+
+    chrome.braveRewards.getBalanceReport(
+      new Date().getMonth() + 1,
+      new Date().getFullYear(),
+      (report) => {
+        stateManager.update({
+          activitySummary: {
+            ads: report.ads,
+            grants: report.grant,
+            autoContribution: report.contribute,
+            monthlyTips: report.monthly,
+            oneTimeTips: report.tips
+          }
+        })
+      })
+
+    chrome.braveRewards.onPromotions.addListener((result, promotions) => {
+      if (result === 1 || !promotions) { // LEDGER_ERROR
+        return
+      }
+
+      const mapPromotionStatus = (status: number): PromotionStatus => {
+        switch (status) {
+          case 0: return 'active'
+          case 1: return 'attested'
+          case 4: return 'finished'
+          case 5: return 'expired'
+          default: return 'active'
+        }
+      }
+
+      stateManager.update({
+        promotions: promotions.map((promotion) => {
+          return {
+            id: promotion.promotionId,
+            kind: promotion.type === 0 ? 'ads' : 'ugp',
+            status: mapPromotionStatus(promotion.status),
+            value: promotion.amount,
+            expiresAt: promotion.expiresAt * 1000 // Convert seconds to ms
+          }
+        })
+      })
+    })
+
+    chrome.braveRewards.fetchPromotions()
+
     loadPublisherInfo()
 
     handleActionURL()
@@ -176,6 +225,61 @@ export function createHost (): Host {
           prefs: { ...currentPrefs, ...prefs }
         })
       }
+    },
+
+    openRewardsSettings () {
+      chrome.tabs.create({ url: 'brave://rewards' })
+      /* TODO
+      if (notificationId) {
+        this.onCloseNotification(notificationId)
+      */
+    },
+
+    openExternalWalletLink (kind) {
+      if (kind === 'desposit') {
+        /* TODO
+        if (notificationId) {
+          this.actions.deleteNotification(notificationId)
+        }
+
+        if (!externalWallet) {
+          return
+        }
+
+        if (externalWallet.addUrl) {
+          chrome.tabs.create({
+            url: externalWallet.addUrl
+          })
+          return
+        }
+
+        utils.handleUpholdLink(balance, externalWallet)
+        */
+        return
+      }
+
+      if (kind === 'account') {
+        /*
+        chrome.tabs.create({ url: externalWallet.accountUrl })
+        */
+      }
+    },
+
+    claimPromotion () {
+
+    },
+
+    attestPromotion () {
+
+    },
+
+    openTipDialog (entryPoint) {
+      const { currentTab, publisherInfo } = stateManager.getState()
+      if (typeof currentTab !== 'number' || !publisherInfo) {
+        return
+      }
+      chrome.braveRewards.tipSite(currentTab, publisherInfo.key, entryPoint)
+      window.close()
     },
 
     addListener: stateManager.addListener
