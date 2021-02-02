@@ -137,5 +137,5 @@
 
     <color name="shields_tooltip_arrow_color_1">#DD295B</color>
     <color name="shields_tooltip_arrow_color_2">#2673DD</color>
-    
+    <color name="vpn_callout_bg_color">#381E85</color>
 </resources>

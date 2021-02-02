@@ -1708,6 +1708,12 @@ until they verify, or until 90 days have passed.
       <message name="IDS_BRAVE_FIREWALL_VPN" desc="VPN title text">
         Brave Firewall + VPN
       </message>
+      <message name="IDS_BRAVE_VPN" desc="VPN title text">
+        Brave VPN
+      </message>
+      <message name="IDS_VPN_SETTINGS_CALLOUT_TEXT" desc="Vpn settings callout text">
+        Brave already blocks web sites from tracking you - upgrade to a VPN to protect your privacy from your cell phone carrier too.
+      </message>
       <message name="IDS_ENABLE" desc="VPN callout text">
         Enable
       </message>
