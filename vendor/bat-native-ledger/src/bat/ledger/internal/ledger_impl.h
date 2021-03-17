@@ -52,7 +52,7 @@ class LedgerImpl : public ledger::Ledger {
   LedgerImpl(const LedgerImpl&) = delete;
   LedgerImpl& operator=(const LedgerImpl&) = delete;
 
-  BATLedgerContext* context() const;
+  BATLedgerContext& context();
 
   ledger::LedgerClient* ledger_client() const;
 

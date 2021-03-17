@@ -20,7 +20,7 @@ TEST_F(AsyncResultTest, CompleteResultSentInFutureTurn) {
   resolver.Complete(10);
   int value = 0;
   resolver.result().Then(
-      base::BindLambdaForTesting([&value](const int& v) { value = v; }));
+      base::BindLambdaForTesting([&value](int v) { value = v; }));
   ASSERT_EQ(value, 0);
   task_environment_.RunUntilIdle();
   ASSERT_EQ(value, 10);
@@ -30,11 +30,24 @@ TEST_F(AsyncResultTest, CompleteCallbacksExecutedInFutureTurn) {
   AsyncResult<int>::Resolver resolver;
   int value = 0;
   resolver.result().Then(
-      base::BindLambdaForTesting([&value](const int& v) { value = v; }));
+      base::BindLambdaForTesting([&value](int v) { value = v; }));
   resolver.Complete(1);
   ASSERT_EQ(value, 0);
   task_environment_.RunUntilIdle();
   ASSERT_EQ(value, 1);
+}
+
+TEST_F(AsyncResultTest, ThenMapping) {
+  AsyncResult<int>::Resolver resolver;
+  double value = 0;
+  resolver.result()
+      .Then(base::BindOnce([](int v) { return static_cast<double>(v) / 2; }))
+      .Then(base::BindLambdaForTesting([&value](double v) { value = v; }));
+
+  resolver.Complete(1);
+  ASSERT_EQ(value, 0);
+  task_environment_.RunUntilIdle();
+  ASSERT_EQ(value, 0.5);
 }
 
 }  // namespace ledger

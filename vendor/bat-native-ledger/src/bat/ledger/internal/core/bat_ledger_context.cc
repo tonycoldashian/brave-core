@@ -28,23 +28,31 @@ BATLedgerContext::BATLedgerContext(LedgerClient* ledger_client)
   DCHECK(ledger_client_);
 }
 
-BATLedgerContext::~BATLedgerContext() = default;
+BATLedgerContext::~BATLedgerContext() {
+  for (auto& job_pair : jobs_)
+    job_pair.second->context_ = nullptr;
 
-using Component = BATLedgerContext::Component;
-using ComponentKey = BATLedgerContext::ComponentKey;
+  for (auto& component_pair : components_)
+    component_pair.second->context_ = nullptr;
+}
 
-ComponentKey::ComponentKey() : value_(g_next_component_key++) {}
+BATLedgerContext::Object::Object() = default;
 
-Component::Component(BATLedgerContext* context) : context_(context) {}
+BATLedgerContext::Object::~Object() = default;
 
-Component::~Component() = default;
+BATLedgerContext& BATLedgerContext::Object::context() {
+  CHECK(context_);
+  return *context_;
+}
 
 using LogStream = BATLedgerContext::LogStream;
 
 LogStream::LogStream(BATLedgerContext* context,
                      base::Location location,
                      LogLevel log_level)
-    : context_(context), location_(location), log_level_(log_level) {}
+    : context_(context), location_(location), log_level_(log_level) {
+  DCHECK(context);
+}
 
 LogStream::LogStream(LogStream&& other)
     : context_(other.context_),
@@ -90,6 +98,17 @@ LogStream BATLedgerContext::LogVerbose(base::Location location) {
 
 LogStream BATLedgerContext::LogFull(base::Location location) {
   return LogStream(this, location, LogLevel::kFull);
+}
+
+size_t BATLedgerContext::ReserveComponentKey() {
+  return g_next_component_key++;
+}
+
+void BATLedgerContext::EraseJob(void* job_key) {
+  auto iter = jobs_.find(job_key);
+  DCHECK(iter != jobs_.end());
+  iter->second->context_ = nullptr;
+  jobs_.erase(iter);
 }
 
 }  // namespace ledger

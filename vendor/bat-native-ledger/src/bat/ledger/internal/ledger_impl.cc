@@ -71,8 +71,8 @@ LedgerImpl::~LedgerImpl() {
   }
 }
 
-BATLedgerContext* LedgerImpl::context() const {
-  return context_.get();
+BATLedgerContext& LedgerImpl::context() {
+  return *context_;
 }
 
 ledger::LedgerClient* LedgerImpl::ledger_client() const {

@@ -7,10 +7,12 @@
 #define BRAVE_VENDOR_BAT_NATIVE_LEDGER_SRC_BAT_LEDGER_INTERNAL_CORE_ASYNC_RESULT_H_
 
 #include <list>
-#include <memory>
+#include <type_traits>
 #include <utility>
 
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 
@@ -23,7 +25,7 @@ namespace ledger {
 //   resolver.Complete(42);
 //
 //   AsyncResult<int> result = resolver.result();
-//   result.Then(base::BindOnce([](const int& value) {}));
+//   result.Then(base::BindOnce([](int value) {}));
 //
 // Listeners are called on the current SequencedTaskRunner, and are guaranteed
 // to be called asynchronously. AsyncResult and Resolver objects are internally
@@ -31,22 +33,40 @@ namespace ledger {
 // structures are updated on the sequence that created the Resolver.
 template <typename T>
 class AsyncResult {
+  static_assert(!std::is_reference<T>::value && !std::is_pointer<T>::value,
+                "AsyncResult is not supported for pointer or reference types");
+
  public:
   using CompleteType = T;
-  using CompleteCallback = base::OnceCallback<void(const T&)>;
+  using CompleteCallback = base::OnceCallback<void(T)>;
+
+  template <typename U>
+  using MapCompleteCallback = base::OnceCallback<U(T)>;
 
   void Then(CompleteCallback on_complete) {
+    DCHECK(store_);
+
     Listener listener = {.on_complete = std::move(on_complete),
                          .task_runner = base::SequencedTaskRunnerHandle::Get()};
 
     task_runner_->PostTask(FROM_HERE, base::BindOnce(AddListenerInTask, store_,
                                                      std::move(listener)));
+
+    store_.reset();
+  }
+
+  template <typename U>
+  AsyncResult<U> Then(MapCompleteCallback<U> map_complete) {
+    typename AsyncResult<U>::Resolver resolver;
+    Then(base::BindOnce(ThenCompleteCallback<U>, resolver,
+                        std::move(map_complete)));
+    return resolver.result();
   }
 
   class Resolver {
    public:
     Resolver() {}
-    void Complete(T&& value) { result_.Complete(std::move(value)); }
+    void Complete(T value) { result_.Complete(std::move(value)); }
     AsyncResult result() const { return result_; }
 
    private:
@@ -58,18 +78,18 @@ class AsyncResult {
       : store_(new Store()),
         task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 
-  enum class State { kPending, kComplete };
+  enum class State { kPending, kComplete, kEmpty };
 
   struct Listener {
     CompleteCallback on_complete;
     scoped_refptr<base::SequencedTaskRunner> task_runner;
   };
 
-  struct Store {
+  struct Store : public base::RefCountedThreadSafe<Store> {
     Store() {}
     State state = State::kPending;
     base::Optional<T> value;
-    std::list<Listener> listeners;
+    base::Optional<Listener> listener;
   };
 
   void Complete(T&& value) {
@@ -77,43 +97,54 @@ class AsyncResult {
         FROM_HERE, base::BindOnce(SetCompleteInTask, store_, std::move(value)));
   }
 
-  static void AddListenerInTask(std::shared_ptr<Store> store,
-                                Listener listener) {
+  template <typename U>
+  static void ThenCompleteCallback(typename AsyncResult<U>::Resolver resolver,
+                                   MapCompleteCallback<U> map_complete,
+                                   T value) {
+    resolver.Complete(std::move(map_complete).Run(std::move(value)));
+  }
+
+  static void AddListenerInTask(scoped_refptr<Store> store, Listener listener) {
     switch (store->state) {
       case State::kComplete:
+        store->state = State::kEmpty;
+        DCHECK(store->value);
         listener.task_runner->PostTask(
-            FROM_HERE, base::BindOnce(RunCompleteCallback, store,
-                                      std::move(listener.on_complete)));
+            FROM_HERE,
+            base::BindOnce(RunCompleteCallback, std::move(*store->value),
+                           std::move(listener.on_complete)));
         break;
       case State::kPending:
-        store->listeners.emplace_back(std::move(listener));
+        store->listener = std::move(listener);
+        break;
+      case State::kEmpty:
+        NOTREACHED();
         break;
     }
   }
 
-  static void SetCompleteInTask(std::shared_ptr<Store> store, T value) {
+  static void SetCompleteInTask(scoped_refptr<Store> store, T value) {
     if (store->state != State::kPending)
       return;
 
     store->state = State::kComplete;
     store->value = std::move(value);
 
-    for (auto& listener : store->listeners) {
+    if (store->listener) {
+      store->state = State::kEmpty;
+      Listener listener = std::move(*store->listener);
       listener.task_runner->PostTask(
-          FROM_HERE, base::BindOnce(RunCompleteCallback, store,
-                                    std::move(listener.on_complete)));
+          FROM_HERE,
+          base::BindOnce(RunCompleteCallback, std::move(*store->value),
+                         std::move(listener.on_complete)));
     }
-
-    store->listeners.clear();
   }
 
-  static void RunCompleteCallback(std::shared_ptr<Store> store,
-                                  CompleteCallback on_complete) {
-    DCHECK(store->value);
-    std::move(on_complete).Run(*store->value);
+  static void RunCompleteCallback(T value, CompleteCallback on_complete) {
+    std::move(on_complete).Run(std::move(value));
   }
 
-  std::shared_ptr<Store> store_;
+  scoped_refptr<Store> store_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 };
 
