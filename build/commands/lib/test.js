@@ -64,11 +64,22 @@ const test = (passthroughArgs, suite, buildConfig = config.defaultBuildConfig, o
   braveArgs = braveArgs.concat(passthroughArgs)
 
   // Build the tests
-  if (suite === 'brave_unit_tests' || suite === 'brave_browser_tests') {
-    util.run('ninja', ['-C', config.outputDir, "brave/test:" + suite], config.defaultOptions)
-  } else {
-    util.run('ninja', ['-C', config.outputDir, suite], config.defaultOptions)
+  let ninjaOpts = [
+    '-C', config.outputDir, (suite === 'brave_unit_tests' || suite === 'brave_browser_tests') ? "brave/test:" + suite : suite,
+    ...config.extraNinjaOpts
+  ]
+
+  if (config.use_goma) {
+    const gomaLoginInfo = util.runProcess('goma_auth', ['info'], options)
+    if (gomaLoginInfo.status !== 0) {
+      console.log('Login required for using Goma. This is only needed once')
+      util.run('goma_auth', ['login'], options)
+    }
+    util.run('goma_ctl', ['ensure_start'], options)
+    ninjaOpts.push('-j', config.gomaJValue)
   }
+
+  util.run('ninja', ninjaOpts, config.defaultOptions)
 
   if (config.targetOS === 'ios') {
     util.run(path.join(config.outputDir, "iossim"), [
