@@ -142,7 +142,8 @@ IN_PROC_BROWSER_TEST_F(BraveProfileManagerTest,
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ASSERT_TRUE(profile_manager);
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  Profile* otr_profile = profile->GetPrimaryOTRProfile();
+  Profile* otr_profile =
+      profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
 
   profiles::SwitchToGuestProfile(ProfileManager::CreateCallback());
   ui_test_utils::WaitForBrowserToOpen();
