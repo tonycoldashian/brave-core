@@ -111,8 +111,8 @@ IN_PROC_BROWSER_TEST_F(BraveSearchTest, CheckForAFunction) {
       browser()->tab_strip_model()->GetActiveWebContents();
   WaitForLoadStop(contents);
 
-  auto result_first =
-      EvalJsWithManualReply(contents, GetChromeFetchBackupResultsAvailScript());
+  auto result_first = EvalJs(contents, GetChromeFetchBackupResultsAvailScript(),
+                             content::EXECUTE_SCRIPT_USE_MANUAL_REPLY);
   EXPECT_EQ(base::Value(true), result_first.value);
 }
 
@@ -123,8 +123,8 @@ IN_PROC_BROWSER_TEST_F(BraveSearchTest, CheckForAFunctionDev) {
       browser()->tab_strip_model()->GetActiveWebContents();
   WaitForLoadStop(contents);
 
-  auto result_first =
-      EvalJsWithManualReply(contents, GetChromeFetchBackupResultsAvailScript());
+  auto result_first = EvalJs(contents, GetChromeFetchBackupResultsAvailScript(),
+                             content::EXECUTE_SCRIPT_USE_MANUAL_REPLY);
   EXPECT_EQ(base::Value(true), result_first.value);
 }
 
@@ -135,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(BraveSearchTest, CheckForAnUndefinedFunction) {
       browser()->tab_strip_model()->GetActiveWebContents();
   WaitForLoadStop(contents);
 
-  auto result_first =
-      EvalJsWithManualReply(contents, GetChromeFetchBackupResultsAvailScript());
+  auto result_first = EvalJs(contents, GetChromeFetchBackupResultsAvailScript(),
+                             content::EXECUTE_SCRIPT_USE_MANUAL_REPLY);
   EXPECT_EQ(base::Value(false), result_first.value);
 }
