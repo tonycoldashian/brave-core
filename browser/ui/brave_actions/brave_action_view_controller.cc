@@ -80,11 +80,6 @@ bool BraveActionViewController::IsEnabled(
   return is_enabled;
 }
 
-bool BraveActionViewController::DisabledClickOpensMenu() const {
-  // disabled is a per-tab state
-  return false;
-}
-
 ui::MenuModel* BraveActionViewController::GetContextMenu() {
   // no context menu for brave actions button
   return nullptr;
