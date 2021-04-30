@@ -1,16 +1,16 @@
 diff --git a/components/content_settings/core/common/content_settings.cc b/components/content_settings/core/common/content_settings.cc
-index 07844f2bcf15a1d6fb23b690a94489cb2816a58a..ff777f1266ae510123f33dc936a041f5fe4ec65c 100644
+index edf31ba76eb0e2949aaa916d2f83fb55a8dc7b03..c88c72b3f3a4774264c831b8765137f3cf2bdf37 100644
 --- a/components/content_settings/core/common/content_settings.cc
 +++ b/components/content_settings/core/common/content_settings.cc
-@@ -95,6 +95,7 @@ constexpr HistogramValue kHistogramValue[] = {
-     {ContentSettingsType::DISPLAY_CAPTURE, 74},
-     {ContentSettingsType::FILE_HANDLING, 75},
+@@ -97,6 +97,7 @@ constexpr HistogramValue kHistogramValue[] = {
      {ContentSettingsType::FILE_SYSTEM_ACCESS_CHOOSER_DATA, 76},
+     {ContentSettingsType::FEDERATED_IDENTITY_SHARING, 77},
+     {ContentSettingsType::FEDERATED_IDENTITY_REQUEST, 78},
 +    BRAVE_HISTOGRAM_VALUE_LIST
  };
  
  }  // namespace
-@@ -181,6 +182,7 @@ bool RendererContentSettingRules::IsRendererContentSetting(
+@@ -183,6 +184,7 @@ bool RendererContentSettingRules::IsRendererContentSetting(
           content_type == ContentSettingsType::JAVASCRIPT ||
           content_type == ContentSettingsType::CLIENT_HINTS ||
           content_type == ContentSettingsType::POPUPS ||
