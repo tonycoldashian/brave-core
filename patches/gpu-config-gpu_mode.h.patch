@@ -1,0 +1,14 @@
+diff --git a/gpu/config/gpu_mode.h b/gpu/config/gpu_mode.h
+index a14a9cb49eea6c2dc89652614c48701b3f413031..a32aa99b7e5e0c668d863b82bd3c050db8f89bdd 100644
+--- a/gpu/config/gpu_mode.h
++++ b/gpu/config/gpu_mode.h
+@@ -20,9 +20,6 @@ enum class GpuMode {
+   SWIFTSHADER,
+   // The GPU process is running for the display compositor.
+   DISPLAY_COMPOSITOR,
+-  // The GPU process is disabled and won't start. This is only used on Windows
+-  // when GPU acceleration and SwiftShader are both disabled.
+-  DISABLED,
+ };
+ 
+ }  // namespace gpu

@@ -1,0 +1,16 @@
+diff --git a/content/browser/BUILD.gn b/content/browser/BUILD.gn
+index b63cf589be716da5c8bfa1d3fe8c5d2aec04d267..741727aa74cb0662325651c49fa7076547af67fe 100644
+--- a/content/browser/BUILD.gn
++++ b/content/browser/BUILD.gn
+@@ -2841,10 +2841,7 @@ source_set("browser") {
+       "renderer_host/delegated_frame_host.cc",
+       "renderer_host/delegated_frame_host.h",
+     ]
+-    deps += [
+-      "//components/viz/service/main",
+-      "//ui/compositor",
+-    ]
++    deps += [ "//ui/compositor" ]
+     if (is_mac) {
+       sources += [
+         "renderer_host/browser_compositor_view_mac.h",

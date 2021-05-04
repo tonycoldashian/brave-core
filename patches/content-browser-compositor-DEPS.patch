@@ -1,0 +1,17 @@
+diff --git a/content/browser/compositor/DEPS b/content/browser/compositor/DEPS
+index c58c6d7685ce5d5d051f971c8591d33401f52c2b..12cf7002c1fbeefd8277becc1bd9cb63016e5f21 100644
+--- a/content/browser/compositor/DEPS
++++ b/content/browser/compositor/DEPS
+@@ -2,10 +2,4 @@ include_rules = [
+  "+components/viz/common",
+  "+components/viz/host",
+  "+ui/platform_window",
+-]
+-
+-specific_include_rules = {
+-  "viz_process_transport_factory\.h" : [
+-    "+components/viz/service/main/viz_compositor_thread_runner_impl.h",
+-  ]
+-}
++]
+\ No newline at end of file

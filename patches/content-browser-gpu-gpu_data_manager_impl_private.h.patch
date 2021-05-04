@@ -1,0 +1,12 @@
+diff --git a/content/browser/gpu/gpu_data_manager_impl_private.h b/content/browser/gpu/gpu_data_manager_impl_private.h
+index 40b736989347b13e0ec0393bd02d67d2cae5ef96..b024f38cef70991a354a6498c5a46400230dec25 100644
+--- a/content/browser/gpu/gpu_data_manager_impl_private.h
++++ b/content/browser/gpu/gpu_data_manager_impl_private.h
+@@ -44,7 +44,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
+   gpu::GPUInfo GetGPUInfoForHardwareGpu() const;
+   bool GpuAccessAllowed(std::string* reason) const;
+   bool GpuAccessAllowedForHardwareGpu(std::string* reason) const;
+-  bool GpuProcessStartAllowed() const;
+   void RequestDxdiagDx12VulkanGpuInfoIfNeeded(GpuInfoRequest request,
+                                               bool delayed);
+   bool IsEssentialGpuInfoAvailable() const;

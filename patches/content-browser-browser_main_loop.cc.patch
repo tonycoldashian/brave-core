@@ -1,0 +1,14 @@
+diff --git a/content/browser/browser_main_loop.cc b/content/browser/browser_main_loop.cc
+index 92c614079031f50f250dc8e425df111622a67c2b..5fcb3738cff9bb16e4bf116a4035eb37e195991b 100644
+--- a/content/browser/browser_main_loop.cc
++++ b/content/browser/browser_main_loop.cc
+@@ -1331,8 +1331,7 @@ void BrowserMainLoop::PostCreateThreadsImpl() {
+ #endif
+   ui::Clipboard::SetAllowedThreads(allowed_clipboard_threads);
+ 
+-  if (GpuDataManagerImpl::GetInstance()->GpuProcessStartAllowed() &&
+-      !established_gpu_channel && always_uses_gpu) {
++  if (!established_gpu_channel && always_uses_gpu) {
+     TRACE_EVENT_INSTANT0("gpu", "Post task to launch GPU process",
+                          TRACE_EVENT_SCOPE_THREAD);
+     GetIOThreadTaskRunner({})->PostTask(

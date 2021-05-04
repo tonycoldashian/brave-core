@@ -1,0 +1,16 @@
+diff --git a/content/browser/gpu/gpu_data_manager_impl.cc b/content/browser/gpu/gpu_data_manager_impl.cc
+index 2b70aa2406a9edf1af9eaafcf2833935a2089c03..37cf0780ed47c6d37576a4d6a8eacb33a3efecba 100644
+--- a/content/browser/gpu/gpu_data_manager_impl.cc
++++ b/content/browser/gpu/gpu_data_manager_impl.cc
+@@ -155,11 +155,6 @@ void GpuDataManagerImpl::StartUmaTimer() {
+   private_->StartUmaTimer();
+ }
+ 
+-bool GpuDataManagerImpl::GpuProcessStartAllowed() const {
+-  base::AutoLock auto_lock(lock_);
+-  return private_->GpuProcessStartAllowed();
+-}
+-
+ void GpuDataManagerImpl::UpdateGpuInfo(
+     const gpu::GPUInfo& gpu_info,
+     const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu) {

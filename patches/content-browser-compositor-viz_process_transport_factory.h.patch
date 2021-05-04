@@ -1,0 +1,23 @@
+diff --git a/content/browser/compositor/viz_process_transport_factory.h b/content/browser/compositor/viz_process_transport_factory.h
+index 01b409b3754da5c6894b22fc6ee5fcf1f48b8e52..6d2dc84c417148a8c6f26b55a2edb50272997f2c 100644
+--- a/content/browser/compositor/viz_process_transport_factory.h
++++ b/content/browser/compositor/viz_process_transport_factory.h
+@@ -11,7 +11,6 @@
+ #include "build/build_config.h"
+ #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
+ #include "components/viz/common/surfaces/subtree_capture_id_allocator.h"
+-#include "components/viz/service/main/viz_compositor_thread_runner_impl.h"
+ #include "content/browser/compositor/image_transport_factory.h"
+ #include "gpu/command_buffer/common/context_result.h"
+ #include "gpu/ipc/client/gpu_channel_host.h"
+@@ -135,10 +134,6 @@ class VizProcessTransportFactory : public ui::ContextFactory,
+ 
+   std::unique_ptr<cc::SingleThreadTaskGraphRunner> task_graph_runner_;
+ 
+-  // Will start and run the VizCompositorThread for using an in-process display
+-  // compositor.
+-  std::unique_ptr<viz::VizCompositorThreadRunnerImpl> viz_compositor_thread_;
+-
+   base::flat_map<ui::Compositor*, CompositorData> compositor_data_map_;
+ 
+   viz::FrameSinkIdAllocator frame_sink_id_allocator_;
