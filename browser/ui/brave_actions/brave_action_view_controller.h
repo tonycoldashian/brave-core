@@ -10,8 +10,13 @@
 #include <string>
 
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
+#include "extensions/common/extension_id.h"
 
 class BraveActionIconWithBadgeImageSource;
+class Browser;
+class ExtensionAction;
+class ExtensionRegistry;
+class ExtensionsContainer;
 class ToolbarActionViewController;
 
 namespace ui {
@@ -26,6 +31,13 @@ class MenuModel;
 class BraveActionViewController : public ExtensionActionViewController {
  public:
     using ExtensionActionViewController::ExtensionActionViewController;
+
+    static std::unique_ptr<BraveActionViewController> Create(
+        const extensions::ExtensionId& extension_id,
+        Browser* browser,
+        ExtensionsContainer* extensions_container,
+        bool in_overflow_mode);
+
     bool IsEnabled(content::WebContents* web_contents) const override;
     gfx::Image GetIcon(content::WebContents* web_contents,
                        const gfx::Size& size) override;
@@ -34,7 +46,17 @@ class BraveActionViewController : public ExtensionActionViewController {
     bool ExecuteActionUI(std::string relative_path);
     ToolbarActionViewController* GetExtensionViewController(
         const std::string& extension_id);
+
  private:
+    // New instances should be instantiated with Create().
+    BraveActionViewController(
+        scoped_refptr<const extensions::Extension> extension,
+        Browser* browser,
+        extensions::ExtensionAction* extension_action,
+        extensions::ExtensionRegistry* extension_registry,
+        ExtensionsContainer* extensions_container,
+        bool in_overflow_mode);
+
     ExtensionActionViewController* GetPreferredPopupViewController() override;
     bool TriggerPopupWithUrl(PopupShowAction show_action,
                            const GURL& popup_url,
