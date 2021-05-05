@@ -1,8 +1,8 @@
 diff --git a/chrome/utility/services.cc b/chrome/utility/services.cc
-index 39e866f3a91b8e1350ca0472e2ccd9a010ef9203..762dcc45145a6478656afd9b2781786ca30af6b4 100644
+index 0728a65184f274ea9e6466f590500ff6b81aef28..667ca6fc475b310ebc1b0326879e0cc7772e7cb5 100644
 --- a/chrome/utility/services.cc
 +++ b/chrome/utility/services.cc
-@@ -392,6 +392,7 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
+@@ -389,6 +389,7 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
  #endif  // BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
  #endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
  #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
