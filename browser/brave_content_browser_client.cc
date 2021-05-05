@@ -235,11 +235,10 @@ void BindBraveSearchHost(
     return;
 
   content::BrowserContext* context = render_process_host->GetBrowserContext();
-  mojo::MakeSelfOwnedReceiver(
-      std::make_unique<brave_search::BraveSearchHost>(
-          content::BrowserContext::GetDefaultStoragePartition(context)
-              ->GetURLLoaderFactoryForBrowserProcess()),
-      std::move(receiver));
+  mojo::MakeSelfOwnedReceiver(std::make_unique<brave_search::BraveSearchHost>(
+                                  context->GetDefaultStoragePartition()
+                                      ->GetURLLoaderFactoryForBrowserProcess()),
+                              std::move(receiver));
 }
 }  // namespace
 
