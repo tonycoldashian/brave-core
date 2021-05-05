@@ -92,9 +92,7 @@ class AdblockCnameResolveHostClient : public network::mojom::ResolveHostClient {
       optional_parameters->source = net::HostResolverSource::DNS;
 
     network::mojom::NetworkContext* network_context =
-        content::BrowserContext::GetDefaultStoragePartition(
-            ctx->browser_context)
-            ->GetNetworkContext();
+        ctx->browser_context->GetDefaultStoragePartition()->GetNetworkContext();
 
     start_time_ = base::TimeTicks::Now();
 

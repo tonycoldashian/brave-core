@@ -96,8 +96,7 @@ void EthJsonRpcController::Request(const std::string& json_payload,
           : network::SimpleURLLoader::RetryMode::RETRY_NEVER);
   auto iter = url_loaders_.insert(url_loaders_.begin(), std::move(url_loader));
 
-  auto* default_storage_partition =
-      content::BrowserContext::GetDefaultStoragePartition(context_);
+  auto* default_storage_partition = context_->GetDefaultStoragePartition();
   auto* url_loader_factory =
       default_storage_partition->GetURLLoaderFactoryForBrowserProcess().get();
 
