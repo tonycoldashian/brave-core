@@ -32,9 +32,8 @@ IpnsKeysManager::IpnsKeysManager(content::BrowserContext* context,
                                  const GURL& server_endpoint)
     : context_(context), server_endpoint_(server_endpoint) {
   DCHECK(context_);
-  url_loader_factory_ =
-      content::BrowserContext::GetDefaultStoragePartition(context)
-          ->GetURLLoaderFactoryForBrowserProcess();
+  url_loader_factory_ = context->GetDefaultStoragePartition()
+                            ->GetURLLoaderFactoryForBrowserProcess();
 }
 
 IpnsKeysManager::~IpnsKeysManager() {}

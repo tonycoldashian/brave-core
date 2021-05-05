@@ -71,7 +71,7 @@ IpfsImportWorkerBase::IpfsImportWorkerBase(content::BrowserContext* context,
       weak_factory_(this) {
   DCHECK(context);
   DCHECK(endpoint.is_valid());
-  auto* storage = content::BrowserContext::GetDefaultStoragePartition(context);
+  auto* storage = context->GetDefaultStoragePartition();
   if (storage)
     url_loader_factory_ = storage->GetURLLoaderFactoryForBrowserProcess();
   data_.reset(new ipfs::ImportedData());
