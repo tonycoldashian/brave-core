@@ -105,11 +105,9 @@ class IpfsService : public KeyedService,
                                      const std::string& key,
                                      ImportCompletedCallback callback);
   virtual void ImportLinkToIpfs(const GURL& url,
-                                const std::string& key,
                                 ImportCompletedCallback callback);
   virtual void ImportTextToIpfs(const std::string& text,
                                 const std::string& host,
-                                const std::string& key,
                                 ImportCompletedCallback callback);
   virtual void PreWarmShareableLink(const GURL& url);
 

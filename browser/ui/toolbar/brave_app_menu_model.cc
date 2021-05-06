@@ -14,6 +14,7 @@
 #include "chrome/grit/generated_resources.h"
 
 #if BUILDFLAG(IPFS_ENABLED)
+#include "brave/browser/ipfs/import/ipfs_import_controller.h"
 #include "brave/browser/ipfs/ipfs_helper.h"
 #include "brave/browser/ipfs/ipfs_tab_helper.h"
 #include "brave/grit/brave_theme_resources.h"
