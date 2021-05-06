@@ -662,6 +662,12 @@ class RewardsServiceImpl : public RewardsService,
 
   void DeleteLog(ledger::ResultCallback callback) override;
 
+  void EncryptString(const std::string& input,
+                     std::function<void(const std::string&)> callback) override;
+
+  void DecryptString(const std::string& input,
+                     std::function<void(const std::string&)> callback) override;
+
   // end ledger::LedgerClient
 
   // Mojo Proxy methods

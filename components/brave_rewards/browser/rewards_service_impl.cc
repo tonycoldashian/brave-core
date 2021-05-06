@@ -3270,6 +3270,30 @@ void RewardsServiceImpl::DeleteLog(ledger::ResultCallback callback) {
                      std::move(callback)));
 }
 
+void RewardsServiceImpl::EncryptString(
+    const std::string& input,
+    std::function<void(const std::string&)> callback) {
+  std::string encrypted;
+  if (!OSCrypt::EncryptString(input, &encrypted)) {
+    callback("");
+    return;
+  }
+
+  callback(encrypted);
+}
+
+void RewardsServiceImpl::DecryptString(
+    const std::string& input,
+    std::function<void(const std::string&)> callback) {
+  std::string output;
+  if (!OSCrypt::DecryptString(input, &output)) {
+    callback("");
+    return;
+  }
+
+  callback(output);
+}
+
 void RewardsServiceImpl::OnDiagnosticLogDeleted(ledger::ResultCallback callback,
                                                 const bool success) {
   const auto result = success

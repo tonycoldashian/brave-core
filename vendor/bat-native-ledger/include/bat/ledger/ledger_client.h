@@ -3,8 +3,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef BAT_LEDGER_LEDGER_CLIENT_H_
-#define BAT_LEDGER_LEDGER_CLIENT_H_
+#ifndef BRAVE_VENDOR_BAT_NATIVE_LEDGER_INCLUDE_BAT_LEDGER_LEDGER_CLIENT_H_
+#define BRAVE_VENDOR_BAT_NATIVE_LEDGER_INCLUDE_BAT_LEDGER_LEDGER_CLIENT_H_
 
 #include <functional>
 #include <memory>
@@ -158,8 +158,16 @@ class LEDGER_EXPORT LedgerClient {
       const std::string& value) = 0;
 
   virtual std::string GetEncryptedStringState(const std::string& name) = 0;
+
+  virtual void EncryptString(
+      const std::string& input,
+      std::function<void(const std::string&)> callback) = 0;
+
+  virtual void DecryptString(
+      const std::string& input,
+      std::function<void(const std::string&)> callback) = 0;
 };
 
 }  // namespace ledger
 
-#endif  // BAT_LEDGER_LEDGER_CLIENT_H_
+#endif  // BRAVE_VENDOR_BAT_NATIVE_LEDGER_INCLUDE_BAT_LEDGER_LEDGER_CLIENT_H_

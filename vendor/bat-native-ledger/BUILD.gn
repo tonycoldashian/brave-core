@@ -172,6 +172,8 @@ source_set("ledger") {
     "src/bat/ledger/internal/core/sql_store.h",
     "src/bat/ledger/internal/core/url_fetcher.cc",
     "src/bat/ledger/internal/core/url_fetcher.h",
+    "src/bat/ledger/internal/core/user_encryption.cc",
+    "src/bat/ledger/internal/core/user_encryption.h",
     "src/bat/ledger/internal/credentials/credentials.h",
     "src/bat/ledger/internal/credentials/credentials_common.cc",
     "src/bat/ledger/internal/credentials/credentials_common.h",

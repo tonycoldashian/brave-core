@@ -385,4 +385,22 @@ std::string BatLedgerClientMojoBridge::GetEncryptedStringState(
   return value;
 }
 
+void BatLedgerClientMojoBridge::EncryptString(
+    const std::string& input,
+    std::function<void(const std::string&)> callback) {
+  auto apply = [](std::function<void(const std::string&)> callback,
+                  const std::string& output) { callback(output); };
+
+  bat_ledger_client_->EncryptString(input, base::BindOnce(apply, callback));
+}
+
+void BatLedgerClientMojoBridge::DecryptString(
+    const std::string& input,
+    std::function<void(const std::string&)> callback) {
+  auto apply = [](std::function<void(const std::string&)> callback,
+                  const std::string& output) { callback(output); };
+
+  bat_ledger_client_->DecryptString(input, base::BindOnce(apply, callback));
+}
+
 }  // namespace bat_ledger

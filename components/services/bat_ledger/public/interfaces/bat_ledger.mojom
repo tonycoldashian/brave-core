@@ -246,4 +246,7 @@ interface BatLedgerClient {
 
   [Sync]
   GetEncryptedStringState(string name) => (string value);
+
+  EncryptString(string input) => (string output);
+  DecryptString(string input) => (string output);
 };

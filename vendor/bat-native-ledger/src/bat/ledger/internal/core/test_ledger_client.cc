@@ -283,6 +283,20 @@ std::string TestLedgerClient::GetEncryptedStringState(const std::string& name) {
   return opt ? *opt : "";
 }
 
+void TestLedgerClient::EncryptString(
+    const std::string& input,
+    std::function<void(const std::string&)> callback) {
+  // No encryption is currently performed for tests.
+  callback(input);
+}
+
+void TestLedgerClient::DecryptString(
+    const std::string& input,
+    std::function<void(const std::string&)> callback) {
+  // No encryption is currently performed for tests.
+  callback(input);
+}
+
 void TestLedgerClient::SetOptionForTesting(const std::string& name,
                                            base::Value&& value) {
   option_store_.SetPath(name, std::move(value));

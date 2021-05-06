@@ -142,6 +142,12 @@ class LedgerClientMojoBridge :
       const std::string& name,
       GetEncryptedStringStateCallback callback) override;
 
+  void EncryptString(const std::string& input,
+                     EncryptStringCallback callback) override;
+
+  void DecryptString(const std::string& input,
+                     DecryptStringCallback callback) override;
+
  private:
   // workaround to pass base::OnceCallback into std::bind
   template <typename Callback>
