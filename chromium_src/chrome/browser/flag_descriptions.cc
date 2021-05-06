@@ -39,6 +39,9 @@ const char kBraveAdblockCspRulesDescription[] =
 const char kBraveDomainBlockName[] = "Enable domain blocking";
 const char kBraveDomainBlockDescription[] =
     "Enable support for blocking domains with an interstitial page";
+const char kBraveDebounceName[] = "Enable debouncing";
+const char kBraveDebounceDescription[] =
+    "Enable support for skipping certain tracking URLs.";
 const char kBraveExtensionNetworkBlockingName[] =
     "Enable extension network blocking";
 const char kBraveExtensionNetworkBlockingDescription[] =

@@ -38,109 +38,6 @@ bool IsUAWhitelisted(const GURL& gurl) {
       [&gurl](URLPattern pattern) { return pattern.MatchesURL(gurl); });
 }
 
-const std::string& GetQueryStringTrackers() {
-  static const base::NoDestructor<std::string> trackers(base::JoinString(
-      std::vector<std::string>(
-          {// https://github.com/brave/brave-browser/issues/4239
-           "fbclid", "gclid", "msclkid", "mc_eid",
-           // https://github.com/brave/brave-browser/issues/9879
-           "dclid",
-           // https://github.com/brave/brave-browser/issues/13644
-           "oly_anon_id", "oly_enc_id",
-           // https://github.com/brave/brave-browser/issues/11579
-           "_openstat",
-           // https://github.com/brave/brave-browser/issues/11817
-           "vero_conv", "vero_id",
-           // https://github.com/brave/brave-browser/issues/13647
-           "wickedid",
-           // https://github.com/brave/brave-browser/issues/11578
-           "yclid",
-           // https://github.com/brave/brave-browser/issues/8975
-           "__s",
-           // https://github.com/brave/brave-browser/issues/9019
-           "_hsenc", "__hssc", "__hstc", "__hsfp", "hsCtaTracking"}),
-      "|"));
-  return *trackers;
-}
-
-// From src/components/autofill/content/renderer/page_passwords_analyser.cc
-// and password_form_conversion_utils.cc:
-#define DECLARE_LAZY_MATCHER(NAME, PATTERN)                                   \
-  struct LabelPatternLazyInstanceTraits_##NAME                                \
-      : public base::internal::DestructorAtExitLazyInstanceTraits<re2::RE2> { \
-    static re2::RE2* New(void* instance) {                                    \
-      re2::RE2::Options options;                                              \
-      options.set_case_sensitive(false);                                      \
-      re2::RE2* matcher = new (instance) re2::RE2(PATTERN, options);          \
-      DCHECK(matcher->ok());                                                  \
-      return matcher;                                                         \
-    }                                                                         \
-  };                                                                          \
-  base::LazyInstance<re2::RE2, LabelPatternLazyInstanceTraits_##NAME> NAME =  \
-      LAZY_INSTANCE_INITIALIZER
-
-// e.g. "?fbclid=1234"
-DECLARE_LAZY_MATCHER(tracker_only_matcher,
-                     "^(" + GetQueryStringTrackers() + ")=[^&]+$");
-
-// e.g. "?fbclid=1234&foo=1"
-DECLARE_LAZY_MATCHER(tracker_first_matcher,
-                     "^(" + GetQueryStringTrackers() + ")=[^&]+&");
-
-// e.g. "?foo=1&fbclid=1234" or "?foo=1&fbclid=1234&bar=2"
-DECLARE_LAZY_MATCHER(tracker_appended_matcher,
-                     "&(" + GetQueryStringTrackers() + ")=[^&]+");
-
-#undef DECLARE_LAZY_MATCHER
-
-void ApplyPotentialQueryStringFilter(std::shared_ptr<BraveRequestInfo> ctx) {
-  SCOPED_UMA_HISTOGRAM_TIMER("Brave.SiteHacks.QueryFilter");
-
-  if (!ctx->allow_brave_shields) {
-    // Don't apply the filter if the destination URL has shields down.
-    return;
-  }
-
-  if (ctx->redirect_source.is_valid()) {
-    if (ctx->internal_redirect) {
-      // Ignore internal redirects since we trigger them.
-      return;
-    }
-
-    if (net::registry_controlled_domains::SameDomainOrHost(
-            ctx->redirect_source, ctx->request_url,
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-      // Same-site redirects are exempted.
-      return;
-    }
-  } else if (ctx->initiator_url.is_valid() &&
-             net::registry_controlled_domains::SameDomainOrHost(
-                 ctx->initiator_url, ctx->request_url,
-                 net::registry_controlled_domains::
-                     INCLUDE_PRIVATE_REGISTRIES)) {
-    // Same-site requests are exempted.
-    return;
-  }
-
-  std::string new_query = ctx->request_url.query();
-  // Note: the ordering of these replacements is important.
-  const int replacement_count =
-      re2::RE2::GlobalReplace(&new_query, tracker_appended_matcher.Get(), "") +
-      re2::RE2::GlobalReplace(&new_query, tracker_first_matcher.Get(), "") +
-      re2::RE2::GlobalReplace(&new_query, tracker_only_matcher.Get(), "");
-
-  if (replacement_count > 0) {
-    url::Replacements<char> replacements;
-    if (new_query.empty()) {
-      replacements.ClearQuery();
-    } else {
-      replacements.SetQuery(new_query.c_str(),
-                            url::Component(0, new_query.size()));
-    }
-    ctx->new_url_spec = ctx->request_url.ReplaceComponents(replacements).spec();
-  }
-}
-
 bool ApplyPotentialReferrerBlock(std::shared_ptr<BraveRequestInfo> ctx) {
   if (ctx->tab_origin.SchemeIs(kChromeExtensionScheme)) {
     return false;
@@ -167,9 +64,6 @@ bool ApplyPotentialReferrerBlock(std::shared_ptr<BraveRequestInfo> ctx) {
 int OnBeforeURLRequest_SiteHacksWork(const ResponseCallback& next_callback,
                                      std::shared_ptr<BraveRequestInfo> ctx) {
   ApplyPotentialReferrerBlock(ctx);
-  if (ctx->request_url.has_query()) {
-    ApplyPotentialQueryStringFilter(ctx);
-  }
   return net::OK;
 }
 

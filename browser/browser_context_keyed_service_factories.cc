@@ -15,9 +15,14 @@
 #include "brave/browser/search_engines/search_engine_tracker.h"
 #include "brave/components/brave_rewards/browser/buildflags/buildflags.h"
 #include "brave/components/brave_wallet/common/buildflags/buildflags.h"
+#include "brave/components/debounce/browser/buildflags/buildflags.h"
 #include "brave/components/greaselion/browser/buildflags/buildflags.h"
 #include "brave/components/ipfs/buildflags/buildflags.h"
 #include "brave/components/tor/buildflags/buildflags.h"
+
+#if BUILDFLAG(ENABLE_DEBOUNCE)
+#include "brave/browser/debounce/debounce_service_factory.h"
+#endif
 
 #if BUILDFLAG(ENABLE_GREASELION)
 #include "brave/browser/greaselion/greaselion_service_factory.h"
@@ -58,6 +63,9 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #endif
   brave_shields::AdBlockPrefServiceFactory::GetInstance();
   brave_shields::CookiePrefServiceFactory::GetInstance();
+#if BUILDFLAG(ENABLE_DEBOUNCE)
+  debounce::DebounceServiceFactory::GetInstance();
+#endif
 #if BUILDFLAG(ENABLE_GREASELION)
   greaselion::GreaselionServiceFactory::GetInstance();
 #endif

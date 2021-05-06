@@ -5,6 +5,7 @@
 
 import(
     "//brave/components/brave_perf_predictor/browser/buildflags/buildflags.gni")
+import("//brave/components/debounce/browser/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 
 brave_browser_brave_shields_sources = [

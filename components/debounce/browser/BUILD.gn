@@ -1,0 +1,27 @@
+import("//brave/build/config.gni")
+
+source_set("browser") {
+  sources = [
+    "debounce_download_service.cc",
+    "debounce_download_service.h",
+    "debounce_service.h",
+    "debounce_service_impl.cc",
+    "debounce_service_impl.h",
+    "debounce_throttle.cc",
+    "debounce_throttle.h",
+  ]
+
+  deps = [
+    "//base",
+    "//brave/components/brave_component_updater/browser",
+    "//content/public/browser",
+    "//content/public/common",
+    "//extensions/browser",
+    "//services/network/public/cpp",
+    "//services/network/public/mojom",
+    "//third_party/blink/public/common",
+    "//url",
+  ]
+
+  public_deps = [ "buildflags" ]
+}

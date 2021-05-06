@@ -13,6 +13,7 @@
 #include "brave/components/brave_ads/browser/buildflags/buildflags.h"
 #include "brave/components/brave_component_updater/browser/brave_component.h"
 #include "brave/components/brave_referrals/buildflags/buildflags.h"
+#include "brave/components/debounce/browser/buildflags/buildflags.h"
 #include "brave/components/greaselion/browser/buildflags/buildflags.h"
 #include "brave/components/ipfs/buildflags/buildflags.h"
 #include "brave/components/speedreader/buildflags.h"
@@ -48,6 +49,12 @@ namespace greaselion {
 class GreaselionDownloadService;
 #endif
 }  // namespace greaselion
+
+namespace debounce {
+#if BUILDFLAG(ENABLE_DEBOUNCE)
+class DebounceDownloadService;
+#endif
+}  // namespace debounce
 
 namespace ntp_background_images {
 class NTPBackgroundImagesService;
@@ -94,6 +101,9 @@ class BraveBrowserProcessImpl : public BraveBrowserProcess,
 #endif
 #if BUILDFLAG(ENABLE_GREASELION)
   greaselion::GreaselionDownloadService* greaselion_download_service() override;
+#endif
+#if BUILDFLAG(ENABLE_DEBOUNCE)
+  debounce::DebounceDownloadService* debounce_download_service() override;
 #endif
   brave_shields::HTTPSEverywhereService* https_everywhere_service() override;
   brave_component_updater::LocalDataFilesService* local_data_files_service()
@@ -148,6 +158,9 @@ class BraveBrowserProcessImpl : public BraveBrowserProcess,
 #if BUILDFLAG(ENABLE_GREASELION)
   std::unique_ptr<greaselion::GreaselionDownloadService>
       greaselion_download_service_;
+#endif
+#if BUILDFLAG(ENABLE_DEBOUNCE)
+  std::unique_ptr<debounce::DebounceDownloadService> debounce_download_service_;
 #endif
   std::unique_ptr<brave_shields::HTTPSEverywhereService>
       https_everywhere_service_;
