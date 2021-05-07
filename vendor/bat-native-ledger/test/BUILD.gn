@@ -14,6 +14,7 @@ source_set("bat_native_ledger_tests") {
     "//brave/vendor/bat-native-ledger/src/bat/ledger/internal/bitflyer/bitflyer_util_unittest.cc",
     "//brave/vendor/bat-native-ledger/src/bat/ledger/internal/contribution/contribution_monthly_util_unittest.cc",
     "//brave/vendor/bat-native-ledger/src/bat/ledger/internal/contribution/contribution_unblinded_unittest.cc",
+    "//brave/vendor/bat-native-ledger/src/bat/ledger/internal/core/async_result_cache_unittest.cc",
     "//brave/vendor/bat-native-ledger/src/bat/ledger/internal/core/async_result_unittest.cc",
     "//brave/vendor/bat-native-ledger/src/bat/ledger/internal/core/bat_ledger_context_unittest.cc",
     "//brave/vendor/bat-native-ledger/src/bat/ledger/internal/core/bat_ledger_job_unittest.cc",

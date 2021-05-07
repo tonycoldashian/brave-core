@@ -165,6 +165,7 @@ source_set("ledger") {
     "src/bat/ledger/internal/contribution/unverified.cc",
     "src/bat/ledger/internal/contribution/unverified.h",
     "src/bat/ledger/internal/core/async_result.h",
+    "src/bat/ledger/internal/core/async_result_cache.h",
     "src/bat/ledger/internal/core/bat_ledger_context.cc",
     "src/bat/ledger/internal/core/bat_ledger_context.h",
     "src/bat/ledger/internal/core/bat_ledger_job.h",
