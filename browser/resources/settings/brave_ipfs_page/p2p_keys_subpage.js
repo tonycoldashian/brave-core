@@ -3,6 +3,7 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 import {Router} from '../router.js';
 import {BraveIPFSBrowserProxyImpl} from './brave_ipfs_browser_proxy.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
 
 (function() {
   'use strict';
@@ -106,8 +107,9 @@ Polymer({
     this.showAddp2pKeyDialog_ = false
     this.updateKeys();
   },
-
+  
   onKeyDeleteTapped_: function(event) {
+    this.$$('cr-action-menu').close();
     let name_to_remove = event.model.item.name
     var message = this.i18n('ipfsDeleteKeyConfirmation', name_to_remove)
     if (!window.confirm(message))
@@ -120,6 +122,18 @@ Polymer({
         return;
       }
     });
+  },
+  
+  onExportTap_: function(event) {
+    this.$$('cr-action-menu').close();
+    let name_to_export = event.model.item.name
+    this.browserProxy_.exportIPNSKey(name_to_export);
+  },
+  
+  onKeyMenuTapped_: function(event) {
+    const actionMenu =
+        /** @type {!CrActionMenuElement} */ (this.$$('#key-menu').get());
+    actionMenu.showAt(assert(this.$$('#key-dots')));
   }
 });
 })();

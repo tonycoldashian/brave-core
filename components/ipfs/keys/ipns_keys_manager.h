@@ -52,6 +52,7 @@ class IpnsKeysManager : public IpfsServiceObserver {
   const KeysMap& GetKeys() const { return keys_; }
   const std::string FindKey(const std::string& name) const;
 
+  void ExportKey(const std::string& key, const base::FilePath& path);
   void SetServerEndpointForTest(const GURL& gurl);
   void SetLoadCallbackForTest(LoadKeysCallback callback);
 
@@ -73,7 +74,8 @@ class IpnsKeysManager : public IpfsServiceObserver {
 
   void OnKeysLoaded(SimpleURLLoaderList::iterator iter,
                     std::unique_ptr<std::string> response_body);
-
+  void OnKeyExported(SimpleURLLoaderList::iterator iter,
+                     std::unique_ptr<std::string> response_body);
   void NotifyKeysLoaded(bool result);
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

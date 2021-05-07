@@ -208,4 +208,36 @@ const std::string IpnsKeysManager::FindKey(const std::string& name) const {
   return it->second;
 }
 
+void IpnsKeysManager::ExportKey(const std::string& key,
+                                const base::FilePath& path) {
+  auto generate_endpoint = server_endpoint_.Resolve(kAPIExportKeyEndpoint);
+  GURL gurl =
+      net::AppendQueryParameter(generate_endpoint, kArgQueryParam, key);
+  //gurl = net::AppendQueryParameter(gurl, "output", path.MaybeAsASCII());
+
+  auto url_loader = CreateURLLoader(gurl, "POST");
+
+  auto iter = url_loaders_.insert(url_loaders_.begin(), std::move(url_loader));
+  iter->get()->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&IpnsKeysManager::OnKeyExported, base::Unretained(this),
+                     iter));
+}
+
+void IpnsKeysManager::OnKeyExported(SimpleURLLoaderList::iterator iter,
+                                    std::unique_ptr<std::string> response_body) {
+  auto* url_loader = iter->get();
+  int error_code = url_loader->NetError();
+  int response_code = -1;
+  if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers)
+    response_code = url_loader->ResponseInfo()->headers->response_code();
+  url_loaders_.erase(iter);
+
+  bool success = (error_code == net::OK && response_code == net::HTTP_OK);
+  if (!success) {
+    VLOG(1) << "Fail to export keys, error_code = " << error_code
+            << " response_code = " << response_code;
+  }
+}
+
 }  // namespace ipfs

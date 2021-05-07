@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/flags_ui/flags_ui_constants.h"
@@ -56,6 +57,7 @@
 
 #if BUILDFLAG(IPFS_ENABLED)
 #include "brave/browser/ipfs/ipfs_service_factory.h"
+#include "brave/components/ipfs/keys/ipns_keys_manager.h"
 #include "brave/components/ipfs/ipfs_service.h"
 #include "brave/components/ipfs/pref_names.h"
 #endif
@@ -106,6 +108,11 @@ void BraveDefaultExtensionsHandler::RegisterMessages() {
       "setIPFSStorageMax",
       base::BindRepeating(&BraveDefaultExtensionsHandler::SetIPFSStorageMax,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "exportIPNSKey",
+      base::BindRepeating(&BraveDefaultExtensionsHandler::ExportIPNSKey,
+                          base::Unretained(this)));
+
   web_ui()->RegisterMessageCallback(
       "launchIPFSService",
       base::BindRepeating(&BraveDefaultExtensionsHandler::LaunchIPFSService,
@@ -407,6 +414,15 @@ void BraveDefaultExtensionsHandler::LaunchIPFSService(
     service->LaunchDaemon(base::NullCallback());
 }
 
+void BraveDefaultExtensionsHandler::ExportIPNSKey(
+    const base::ListValue* args) {
+  CHECK_EQ(args->GetSize(), 1U);
+  CHECK(profile_);
+  std::string key_name;
+  args->GetString(0, &key_name);
+  ShowImportDialog(key_name);
+}
+
 void BraveDefaultExtensionsHandler::SetIPFSStorageMax(
     const base::ListValue* args) {
   CHECK_EQ(args->GetSize(), 1U);
@@ -524,5 +540,46 @@ void BraveDefaultExtensionsHandler::OnIpfsShutdown() {
       ipfs::IpfsServiceFactory::GetForContext(profile_);
   bool launched = service && service->IsDaemonLaunched();
   FireWebUIListener("brave-ipfs-node-status-changed", base::Value(launched));
+}
+
+void BraveDefaultExtensionsHandler::FileSelected(const base::FilePath& path,
+                                        int index,
+                                        void* params) {
+  ipfs::IpfsService* service =
+      ipfs::IpfsServiceFactory::GetForContext(profile_);
+  if (!service)
+    return;
+  service->GetIpnsKeysManager()->ExportKey(dialog_key_, path);
+  select_file_dialog_.reset();
+  dialog_key_.clear();
+}
+
+void BraveDefaultExtensionsHandler::FileSelectionCanceled(void* params) {
+  select_file_dialog_.reset();
+  dialog_key_.clear();
+}
+
+void BraveDefaultExtensionsHandler::ShowImportDialog(const std::string& key) {
+  DCHECK(!key.empty());
+  auto* web_contents = web_ui()->GetWebContents();
+  select_file_dialog_ = ui::SelectFileDialog::Create(
+      this, std::make_unique<ChromeSelectFilePolicy>(web_contents));
+  if (!select_file_dialog_) {
+    VLOG(1) << "Export already in progress";
+    return;
+  }
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  const base::FilePath directory = profile->last_selected_directory();
+  gfx::NativeWindow parent_window = web_contents->GetTopLevelNativeWindow();
+  ui::SelectFileDialog::FileTypeInfo file_types;
+  file_types.allowed_paths =
+      ui::SelectFileDialog::FileTypeInfo::NATIVE_PATH;
+  dialog_key_ = key;
+  auto suggested_directory = directory.AppendASCII(key);
+  select_file_dialog_->SelectFile(ui::SelectFileDialog::SELECT_SAVEAS_FILE,
+                                  base::UTF8ToUTF16(key), suggested_directory,
+                                  &file_types, 0, FILE_PATH_LITERAL("key"),
+                                  parent_window, nullptr);
 }
 #endif
