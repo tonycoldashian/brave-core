@@ -168,6 +168,8 @@ source_set("ledger") {
     "src/bat/ledger/internal/core/async_result_cache.h",
     "src/bat/ledger/internal/core/bat_ledger_context.cc",
     "src/bat/ledger/internal/core/bat_ledger_context.h",
+    "src/bat/ledger/internal/core/bat_ledger_initializer.cc",
+    "src/bat/ledger/internal/core/bat_ledger_initializer.h",
     "src/bat/ledger/internal/core/bat_ledger_job.h",
     "src/bat/ledger/internal/core/sql_store.cc",
     "src/bat/ledger/internal/core/sql_store.h",

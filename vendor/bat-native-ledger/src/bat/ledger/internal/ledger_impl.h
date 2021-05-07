@@ -97,6 +97,8 @@ class LedgerImpl : public ledger::Ledger {
       const type::Result result,
       ledger::ResultCallback callback);
 
+  void OnInitializerComplete(ledger::ResultCallback callback, bool success);
+
   void InitializeDatabase(
       const bool execute_create_script,
       ledger::ResultCallback callback);
