@@ -213,7 +213,7 @@ void IpnsKeysManager::ExportKey(const std::string& key,
   auto generate_endpoint = server_endpoint_.Resolve(kAPIExportKeyEndpoint);
   GURL gurl =
       net::AppendQueryParameter(generate_endpoint, kArgQueryParam, key);
-  //gurl = net::AppendQueryParameter(gurl, "output", path.MaybeAsASCII());
+  gurl = net::AppendQueryParameter(gurl, "output", path.MaybeAsASCII());
 
   auto url_loader = CreateURLLoader(gurl, "POST");
 
@@ -235,7 +235,7 @@ void IpnsKeysManager::OnKeyExported(SimpleURLLoaderList::iterator iter,
 
   bool success = (error_code == net::OK && response_code == net::HTTP_OK);
   if (!success) {
-    VLOG(1) << "Fail to export keys, error_code = " << error_code
+    VLOG(1) << "Fail to export a key, error_code = " << error_code
             << " response_code = " << response_code;
   }
 }
