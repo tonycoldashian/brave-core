@@ -28,12 +28,15 @@ class SimpleURLLoader;
 
 namespace ipfs {
 
+class IpfsService;
+
 // Handles communication between browser and local node in order to generate,
 // synchronize and remove p2p keys.
 class IpnsKeysManager : public IpfsServiceObserver {
  public:
   IpnsKeysManager(content::BrowserContext* context,
-                  const GURL& server_endpoint);
+                  const GURL& server_endpoint,
+                  IpfsService* service);
   ~IpnsKeysManager() override;
 
   IpnsKeysManager(const IpnsKeysManager&) = delete;
@@ -74,9 +77,8 @@ class IpnsKeysManager : public IpfsServiceObserver {
 
   void OnKeysLoaded(SimpleURLLoaderList::iterator iter,
                     std::unique_ptr<std::string> response_body);
-  void OnKeyExported(SimpleURLLoaderList::iterator iter,
-                     std::unique_ptr<std::string> response_body);
   void NotifyKeysLoaded(bool result);
+  void OnKeyExported(bool success);
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   SimpleURLLoaderList url_loaders_;
@@ -84,6 +86,8 @@ class IpnsKeysManager : public IpfsServiceObserver {
   base::queue<LoadKeysCallback> pending_load_callbacks_;
   content::BrowserContext* context_ = nullptr;
   GURL server_endpoint_;
+  IpfsService* ipfs_service_ = nullptr;
+  base::WeakPtrFactory<IpnsKeysManager> weak_ptr_factory_{this};
 };
 
 }  // namespace ipfs

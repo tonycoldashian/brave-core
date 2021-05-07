@@ -112,12 +112,10 @@ IpfsService::IpfsService(content::BrowserContext* context,
     OnExecutableReady(ipfs_client_updater_->GetExecutablePath());
   }
   ipns_keys_manager_ =
-      std::make_unique<IpnsKeysManager>(context_, server_endpoint_);
-  AddObserver(ipns_keys_manager_.get());
+      std::make_unique<IpnsKeysManager>(context_, server_endpoint_, this);
 }
 
 IpfsService::~IpfsService() {
-  RemoveObserver(ipns_keys_manager_.get());
   Shutdown();
 }
 

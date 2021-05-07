@@ -12,7 +12,6 @@ extern const char kAPIKeyListEndpoint[];
 extern const char kAPIKeyGenerateEndpoint[];
 extern const char kAPIKeyRemoveEndpoint[];
 extern const char kAPIPublishNameEndpoint[];
-extern const char kAPIExportKeyEndpoint[];
 extern const char kSwarmPeersPath[];
 extern const char kConfigPath[];
 extern const char kArgQueryParam[];

@@ -9,9 +9,21 @@
 #include <string>
 #include <utility>
 
+#include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/process/launch.h"
+#include "base/process/process.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
+#include "base/task_runner_util.h"
+#include "base/task/thread_pool.h"
+#include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 #include "brave/components/ipfs/ipfs_constants.h"
 #include "brave/components/ipfs/ipfs_json_parser.h"
 #include "brave/components/ipfs/ipfs_network_utils.h"
+#include "brave/components/ipfs/ipfs_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/url_util.h"
@@ -19,18 +31,38 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
+namespace {
+
+bool WaitUntilExportFinished(base::Process process, base::FilePath key_path) {
+  bool exited = false;
+  int exit_code = 0;
+  exited = process.WaitForExitWithTimeout(base::TimeDelta::FromSeconds(10),
+                                          &exit_code);
+  if (!exited)
+    process.Terminate(0, true);
+  return exited && !exit_code && base::PathExists(key_path);
+}
+
+}
+
 namespace ipfs {
 
 IpnsKeysManager::IpnsKeysManager(content::BrowserContext* context,
-                                 const GURL& server_endpoint)
-    : context_(context), server_endpoint_(server_endpoint) {
+                                 const GURL& server_endpoint,
+                                 IpfsService* service)
+    : context_(context), server_endpoint_(server_endpoint),
+      ipfs_service_(service) {
   DCHECK(context_);
+  DCHECK(ipfs_service_);
+  ipfs_service_->AddObserver(this);
   url_loader_factory_ =
       content::BrowserContext::GetDefaultStoragePartition(context)
           ->GetURLLoaderFactoryForBrowserProcess();
 }
 
-IpnsKeysManager::~IpnsKeysManager() {}
+IpnsKeysManager::~IpnsKeysManager() {
+  ipfs_service_->RemoveObserver(this);
+}
 
 bool IpnsKeysManager::KeyExists(const std::string& name) const {
   return keys_.count(name);
@@ -209,34 +241,47 @@ const std::string IpnsKeysManager::FindKey(const std::string& name) const {
 }
 
 void IpnsKeysManager::ExportKey(const std::string& key,
-                                const base::FilePath& path) {
-  auto generate_endpoint = server_endpoint_.Resolve(kAPIExportKeyEndpoint);
-  GURL gurl =
-      net::AppendQueryParameter(generate_endpoint, kArgQueryParam, key);
-  gurl = net::AppendQueryParameter(gurl, "output", path.MaybeAsASCII());
+                                const base::FilePath& target_path) {
+  base::FilePath path = ipfs_service_->GetIpfsExecutablePath();
+  if (path.empty())
+    return;
 
-  auto url_loader = CreateURLLoader(gurl, "POST");
+  base::CommandLine cmdline(path);
+  cmdline.AppendArg("key");
+  cmdline.AppendArg("export");
+  cmdline.AppendArg("-o=" + target_path.MaybeAsASCII());
+  cmdline.AppendArg(key);
 
-  auto iter = url_loaders_.insert(url_loaders_.begin(), std::move(url_loader));
-  iter->get()->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      url_loader_factory_.get(),
-      base::BindOnce(&IpnsKeysManager::OnKeyExported, base::Unretained(this),
-                     iter));
+  base::FilePath data_path = ipfs_service_->GetDataPath();
+  base::LaunchOptions options;
+#if defined(OS_WIN)
+  options.environment[L"IPFS_PATH"] = data_path.value();
+#else
+  options.environment["IPFS_PATH"] = data_path.value();
+#endif
+#if defined(OS_LINUX)
+  options.kill_on_parent_death = true;
+#endif
+#if defined(OS_WIN)
+  options.start_hidden = true;
+#endif
+  DLOG(INFO) << cmdline.GetCommandLineString();
+  base::Process process = base::LaunchProcess(cmdline, options);
+  if (!process.IsValid()) {
+    return;
+  }
+
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::WithBaseSyncPrimitives(), 
+      base::TaskPriority::USER_BLOCKING},
+      base::BindOnce(&WaitUntilExportFinished, std::move(process), target_path),
+      base::BindOnce(&IpnsKeysManager::OnKeyExported,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-void IpnsKeysManager::OnKeyExported(SimpleURLLoaderList::iterator iter,
-                                    std::unique_ptr<std::string> response_body) {
-  auto* url_loader = iter->get();
-  int error_code = url_loader->NetError();
-  int response_code = -1;
-  if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers)
-    response_code = url_loader->ResponseInfo()->headers->response_code();
-  url_loaders_.erase(iter);
-
-  bool success = (error_code == net::OK && response_code == net::HTTP_OK);
+void IpnsKeysManager::OnKeyExported(bool success) {
   if (!success) {
-    VLOG(1) << "Fail to export a key, error_code = " << error_code
-            << " response_code = " << response_code;
+    VLOG(1) << "Fail to export a key";
   }
 }
 
