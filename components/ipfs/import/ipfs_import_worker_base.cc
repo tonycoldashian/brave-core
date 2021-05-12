@@ -87,8 +87,7 @@ void IpfsImportWorkerBase::ImportFile(const base::FilePath upload_file_path,
                                       const std::string& mime_type,
                                       const std::string& filename) {
   data_->filename = filename;
-  auto blob_storage_getter =
-      content::BrowserContext::GetBlobStorageContext(browser_context_);
+  auto blob_storage_getter = browser_context_->GetBlobStorageContext();
 
   auto upload_callback = base::BindOnce(&IpfsImportWorkerBase::UploadData,
                                         weak_factory_.GetWeakPtr());
@@ -102,8 +101,7 @@ void IpfsImportWorkerBase::ImportFile(const base::FilePath upload_file_path,
 }
 
 void IpfsImportWorkerBase::ImportFolder(const base::FilePath folder_path) {
-  auto blob_storage_context_getter =
-      content::BrowserContext::GetBlobStorageContext(browser_context_);
+  auto blob_storage_context_getter = browser_context_->GetBlobStorageContext();
 
   auto upload_callback = base::BindOnce(&IpfsImportWorkerBase::UploadData,
                                         weak_factory_.GetWeakPtr());
@@ -122,8 +120,7 @@ void IpfsImportWorkerBase::ImportText(const std::string& text,
   std::string filename = host;
   filename += "_";
   filename += std::to_string(key);
-  auto blob_storage_context_getter =
-      content::BrowserContext::GetBlobStorageContext(browser_context_);
+  auto blob_storage_context_getter = browser_context_->GetBlobStorageContext();
 
   auto upload_callback = base::BindOnce(&IpfsImportWorkerBase::UploadData,
                                         weak_factory_.GetWeakPtr());
