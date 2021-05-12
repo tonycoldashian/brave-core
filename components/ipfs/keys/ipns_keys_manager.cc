@@ -41,9 +41,7 @@ IpnsKeysManager::~IpnsKeysManager() {}
 void IpnsKeysManager::ImportKey(const base::FilePath& upload_file_path,
                                 const std::string& name,
                                 ImportKeyCallback callback) {
-  auto blob_storage_context_getter =
-      content::BrowserContext::GetBlobStorageContext(context_);
-
+  auto blob_storage_context_getter = context_->GetBlobStorageContext();
   auto upload_callback =
       base::BindOnce(&IpnsKeysManager::UploadData, weak_factory_.GetWeakPtr(),
                      std::move(callback), name);

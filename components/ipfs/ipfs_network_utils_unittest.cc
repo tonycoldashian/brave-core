@@ -94,8 +94,7 @@ TEST_F(IpfsNetwrokUtilsUnitTest, CreateRequestForFileTest) {
   size_t file_size = content.size();
   std::string mime_type = "test/type";
   std::string mime_boundary = "mime_boundary";
-  auto storage =
-      content::BrowserContext::GetBlobStorageContext(browser_context());
+  auto storage = browser_context()->GetBlobStorageContext();
   base::RunLoop run_loop;
   auto upload_callback =
       base::BindOnce(&IpfsNetwrokUtilsUnitTest::ValidateRequest,
@@ -110,8 +109,7 @@ TEST_F(IpfsNetwrokUtilsUnitTest, CreateRequestForTextTest) {
   std::string filename = "test_name";
   std::string mime_type = "test/type";
   std::string mime_boundary = "mime_boundary";
-  auto storage =
-      content::BrowserContext::GetBlobStorageContext(browser_context());
+  auto storage = browser_context()->GetBlobStorageContext();
   base::RunLoop run_loop;
   auto upload_callback =
       base::BindOnce(&IpfsNetwrokUtilsUnitTest::ValidateRequest,
@@ -128,8 +126,7 @@ TEST_F(IpfsNetwrokUtilsUnitTest, CreateRequestForFolderTest) {
   CreateCustomTestFile(dir.GetPath(), filename, content);
   std::string mime_type = "test/type";
   std::string mime_boundary = "mime_boundary";
-  auto storage =
-      content::BrowserContext::GetBlobStorageContext(browser_context());
+  auto storage = browser_context()->GetBlobStorageContext();
   base::RunLoop run_loop;
   auto upload_callback =
       base::BindOnce(&IpfsNetwrokUtilsUnitTest::ValidateRequest,
