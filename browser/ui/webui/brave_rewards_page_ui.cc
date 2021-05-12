@@ -569,8 +569,8 @@ void RewardsDOMHandler::GetAutoContributeProperties(
   AllowJavascript();
 
   rewards_service_->GetAutoContributeProperties(
-      base::Bind(&RewardsDOMHandler::OnGetAutoContributeProperties,
-          weak_factory_.GetWeakPtr()));
+      base::BindRepeating(&RewardsDOMHandler::OnGetAutoContributeProperties,
+                          weak_factory_.GetWeakPtr()));
 }
 
 void RewardsDOMHandler::OnGetAutoContributeProperties(
@@ -656,9 +656,8 @@ void RewardsDOMHandler::ClaimPromotion(const base::ListValue* args) {
 #if !defined(OS_ANDROID)
   rewards_service_->ClaimPromotion(
       promotion_id,
-      base::Bind(&RewardsDOMHandler::OnClaimPromotion,
-          weak_factory_.GetWeakPtr(),
-          promotion_id));
+      base::BindRepeating(&RewardsDOMHandler::OnClaimPromotion,
+                          weak_factory_.GetWeakPtr(), promotion_id));
 #else
   // No need for a callback. The UI receives "brave_rewards.promotionFinish".
   brave_rewards::AttestPromotionCallback callback = base::DoNothing();
@@ -757,9 +756,8 @@ void RewardsDOMHandler::OnGetReconcileStamp(uint64_t reconcile_stamp) {
 void RewardsDOMHandler::GetReconcileStamp(const base::ListValue* args) {
   if (rewards_service_) {
     AllowJavascript();
-    rewards_service_->GetReconcileStamp(base::Bind(
-          &RewardsDOMHandler::OnGetReconcileStamp,
-          weak_factory_.GetWeakPtr()));
+    rewards_service_->GetReconcileStamp(base::BindRepeating(
+        &RewardsDOMHandler::OnGetReconcileStamp, weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -778,18 +776,15 @@ void RewardsDOMHandler::OnAutoContributePropsReady(
   filter->min_visits = properties->contribution_min_visits;
 
   rewards_service_->GetActivityInfoList(
-      0,
-      0,
-      std::move(filter),
-      base::Bind(&RewardsDOMHandler::OnPublisherList,
-                 weak_factory_.GetWeakPtr()));
+      0, 0, std::move(filter),
+      base::BindRepeating(&RewardsDOMHandler::OnPublisherList,
+                          weak_factory_.GetWeakPtr()));
 }
 
 void RewardsDOMHandler::GetExcludedSites(const base::ListValue* args) {
   AllowJavascript();
-  rewards_service_->GetExcludedList(
-      base::Bind(&RewardsDOMHandler::OnExcludedSiteList,
-          weak_factory_.GetWeakPtr()));
+  rewards_service_->GetExcludedList(base::BindRepeating(
+      &RewardsDOMHandler::OnExcludedSiteList, weak_factory_.GetWeakPtr()));
 }
 
 void RewardsDOMHandler::OnExcludedSitesChanged(
@@ -971,8 +966,8 @@ void RewardsDOMHandler::GetAutoContributionAmount(const base::ListValue* args) {
   if (rewards_service_) {
     AllowJavascript();
     rewards_service_->GetAutoContributionAmount(
-        base::Bind(&RewardsDOMHandler::OnGetContributionAmount,
-          weak_factory_.GetWeakPtr()));
+        base::BindRepeating(&RewardsDOMHandler::OnGetContributionAmount,
+                            weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -1079,8 +1074,8 @@ void RewardsDOMHandler::GetContributionList(const base::ListValue *args) {
   AllowJavascript();
 
   rewards_service_->GetAutoContributeProperties(
-      base::Bind(&RewardsDOMHandler::OnAutoContributePropsReady,
-        weak_factory_.GetWeakPtr()));
+      base::BindRepeating(&RewardsDOMHandler::OnAutoContributePropsReady,
+                          weak_factory_.GetWeakPtr()));
 }
 
 void RewardsDOMHandler::GetAdsData(const base::ListValue *args) {
@@ -1364,9 +1359,9 @@ void RewardsDOMHandler::GetPendingContributionsTotal(
     const base::ListValue* args) {
   if (rewards_service_) {
     AllowJavascript();
-    rewards_service_->GetPendingContributionsTotal(base::Bind(
-          &RewardsDOMHandler::OnGetPendingContributionsTotal,
-          weak_factory_.GetWeakPtr()));
+    rewards_service_->GetPendingContributionsTotal(
+        base::BindRepeating(&RewardsDOMHandler::OnGetPendingContributionsTotal,
+                            weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -1396,7 +1391,7 @@ void RewardsDOMHandler::OnPublisherListNormalized(
 void RewardsDOMHandler::GetStatement(
     const base::ListValue* args) {
   AllowJavascript();
-  ads_service_->GetAccountStatement(base::Bind(
+  ads_service_->GetAccountStatement(base::BindRepeating(
       &RewardsDOMHandler::OnGetStatement, weak_factory_.GetWeakPtr()));
 }
 
@@ -1440,7 +1435,7 @@ void RewardsDOMHandler::OnStatementChanged(
 }
 
 void RewardsDOMHandler::OnAdRewardsChanged() {
-  ads_service_->GetAccountStatement(base::Bind(
+  ads_service_->GetAccountStatement(base::BindRepeating(
       &RewardsDOMHandler::OnGetStatement, weak_factory_.GetWeakPtr()));
 }
 
@@ -1483,9 +1478,9 @@ void RewardsDOMHandler::GetPendingContributions(
     const base::ListValue* args) {
   if (rewards_service_) {
     AllowJavascript();
-    rewards_service_->GetPendingContributions(base::Bind(
-          &RewardsDOMHandler::OnGetPendingContributions,
-          weak_factory_.GetWeakPtr()));
+    rewards_service_->GetPendingContributions(
+        base::BindRepeating(&RewardsDOMHandler::OnGetPendingContributions,
+                            weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -1948,9 +1943,8 @@ void RewardsDOMHandler::GetWalletPassphrase(const base::ListValue* args) {
   }
 
   AllowJavascript();
-  rewards_service_->GetWalletPassphrase(
-      base::Bind(&RewardsDOMHandler::OnGetWalletPassphrase,
-          weak_factory_.GetWeakPtr()));
+  rewards_service_->GetWalletPassphrase(base::BindRepeating(
+      &RewardsDOMHandler::OnGetWalletPassphrase, weak_factory_.GetWeakPtr()));
 }
 
 void RewardsDOMHandler::OnGetWalletPassphrase(const std::string& passphrase) {

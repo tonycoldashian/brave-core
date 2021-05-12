@@ -39,17 +39,19 @@ class RewardsServiceObserver;
 class RewardsServicePrivateObserver;
 
 using GetPublisherInfoListCallback =
-    base::Callback<void(ledger::type::PublisherInfoList list)>;
-using GetAutoContributionAmountCallback = base::Callback<void(double)>;
-using GetAutoContributePropertiesCallback = base::Callback<void(
-    ledger::type::AutoContributePropertiesPtr)>;
-using GetPublisherMinVisitTimeCallback = base::Callback<void(int)>;
-using GetPublisherMinVisitsCallback = base::Callback<void(int)>;
-using GetPublisherAllowNonVerifiedCallback = base::Callback<void(bool)>;
-using GetPublisherAllowVideosCallback = base::Callback<void(bool)>;
+    base::RepeatingCallback<void(ledger::type::PublisherInfoList list)>;
+using GetAutoContributionAmountCallback = base::RepeatingCallback<void(double)>;
+using GetAutoContributePropertiesCallback =
+    base::RepeatingCallback<void(ledger::type::AutoContributePropertiesPtr)>;
+using GetPublisherMinVisitTimeCallback = base::RepeatingCallback<void(int)>;
+using GetPublisherMinVisitsCallback = base::RepeatingCallback<void(int)>;
+using GetPublisherAllowNonVerifiedCallback =
+    base::RepeatingCallback<void(bool)>;
+using GetPublisherAllowVideosCallback = base::RepeatingCallback<void(bool)>;
 using GetAutoContributeEnabledCallback = base::OnceCallback<void(bool)>;
-using GetReconcileStampCallback = base::Callback<void(uint64_t)>;
-using GetPendingContributionsTotalCallback = base::Callback<void(double)>;
+using GetReconcileStampCallback = base::RepeatingCallback<void(uint64_t)>;
+using GetPendingContributionsTotalCallback =
+    base::RepeatingCallback<void(double)>;
 using GetRewardsInternalsInfoCallback =
     base::OnceCallback<void(ledger::type::RewardsInternalsInfoPtr info)>;
 using SaveRecurringTipCallback = base::OnceCallback<void(bool)>;
@@ -130,7 +132,8 @@ using GetEventLogsCallback =
 using GetBraveWalletCallback =
     base::OnceCallback<void(ledger::type::BraveWalletPtr wallet)>;
 
-using GetWalletPassphraseCallback = base::Callback<void(const std::string&)>;
+using GetWalletPassphraseCallback =
+    base::RepeatingCallback<void(const std::string&)>;
 
 class RewardsService : public KeyedService {
  public:

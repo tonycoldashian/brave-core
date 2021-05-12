@@ -173,17 +173,17 @@ void IpfsService::LaunchIfNotRunning(const base::FilePath& executable_path) {
 
   ipfs_service_.set_disconnect_handler(
       base::BindOnce(&IpfsService::OnIpfsCrashed, base::Unretained(this)));
-  ipfs_service_->SetCrashHandler(
-      base::Bind(&IpfsService::OnIpfsDaemonCrashed, base::Unretained(this)));
+  ipfs_service_->SetCrashHandler(base::BindRepeating(
+      &IpfsService::OnIpfsDaemonCrashed, base::Unretained(this)));
 
   auto config = mojom::IpfsConfig::New(
       executable_path, GetConfigFilePath(), GetDataPath(),
       GetGatewayPort(channel_), GetAPIPort(channel_), GetSwarmPort(channel_),
       GetStorageSize());
 
-  ipfs_service_->Launch(
-      std::move(config),
-      base::Bind(&IpfsService::OnIpfsLaunched, base::Unretained(this)));
+  ipfs_service_->Launch(std::move(config),
+                        base::BindRepeating(&IpfsService::OnIpfsLaunched,
+                                            base::Unretained(this)));
 }
 
 void IpfsService::RestartDaemon() {

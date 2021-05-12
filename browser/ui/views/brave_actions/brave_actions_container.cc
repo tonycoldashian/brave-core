@@ -125,8 +125,9 @@ BraveActionsContainer::BraveActionsContainer(Browser* browser, Profile* profile)
       weak_ptr_factory_(this) {
   // Handle when the extension system is ready
   extension_system_->ready().Post(
-      FROM_HERE, base::Bind(&BraveActionsContainer::OnExtensionSystemReady,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE,
+      base::BindRepeating(&BraveActionsContainer::OnExtensionSystemReady,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 BraveActionsContainer::~BraveActionsContainer() {
@@ -164,10 +165,10 @@ void BraveActionsContainer::Init() {
 
   // React to Brave Rewards preferences changes.
   hide_brave_rewards_button_.Init(
-      brave_rewards::prefs::kHideButton,
-      browser_->profile()->GetPrefs(),
-      base::Bind(&BraveActionsContainer::OnBraveRewardsPreferencesChanged,
-                 base::Unretained(this)));
+      brave_rewards::prefs::kHideButton, browser_->profile()->GetPrefs(),
+      base::BindRepeating(
+          &BraveActionsContainer::OnBraveRewardsPreferencesChanged,
+          base::Unretained(this)));
 }
 
 bool BraveActionsContainer::IsContainerAction(const std::string& id) const {

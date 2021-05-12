@@ -219,8 +219,9 @@ GreaselionDownloadService::GreaselionDownloadService(
                                       base::BindOnce(callback, error));
             },
             base::SequencedTaskRunnerHandle::Get(),
-            base::Bind(&GreaselionDownloadService::OnDevModeLocalFileChanged,
-                       weak_factory_.GetWeakPtr()));
+            base::BindRepeating(
+                &GreaselionDownloadService::OnDevModeLocalFileChanged,
+                weak_factory_.GetWeakPtr()));
 
     // Start the watcher on a background sequence, reporting all events back to
     // this sequence. base::Unretained is safe because the watcher instance
@@ -238,8 +239,9 @@ GreaselionDownloadService::GreaselionDownloadService(
                 callback.Run(/*error=*/true);
               }
             },
-            base::Bind(&GreaselionDownloadService::OnDevModeLocalFileChanged,
-                       weak_factory_.GetWeakPtr())));
+            base::BindRepeating(
+                &GreaselionDownloadService::OnDevModeLocalFileChanged,
+                weak_factory_.GetWeakPtr())));
   }
 #endif
   DETACH_FROM_SEQUENCE(sequence_checker_);

@@ -75,16 +75,17 @@ namespace brave_rewards {
 class RewardsNotificationServiceImpl;
 class RewardsBrowserTest;
 
-using GetEnvironmentCallback = base::Callback<void(ledger::type::Environment)>;
-using GetDebugCallback = base::Callback<void(bool)>;
-using GetReconcileIntervalCallback = base::Callback<void(int32_t)>;
-using GetShortRetriesCallback = base::Callback<void(bool)>;
-using GetTestResponseCallback =
-    base::Callback<void(const std::string& url,
-                        int32_t method,
-                        int* response_status_code,
-                        std::string* response,
-                        base::flat_map<std::string, std::string>* headers)>;
+using GetEnvironmentCallback =
+    base::RepeatingCallback<void(ledger::type::Environment)>;
+using GetDebugCallback = base::RepeatingCallback<void(bool)>;
+using GetReconcileIntervalCallback = base::RepeatingCallback<void(int32_t)>;
+using GetShortRetriesCallback = base::RepeatingCallback<void(bool)>;
+using GetTestResponseCallback = base::RepeatingCallback<void(
+    const std::string& url,
+    int32_t method,
+    int* response_status_code,
+    std::string* response,
+    base::flat_map<std::string, std::string>* headers)>;
 
 using ExternalWalletAuthorizationCallback =
     base::OnceCallback<void(

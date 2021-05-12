@@ -79,8 +79,9 @@ int OnBeforeURLRequest_HttpsePreFileWork(
       g_brave_browser_process->https_everywhere_service()
           ->GetTaskRunner()
           ->PostTaskAndReply(
-              FROM_HERE, base::Bind(OnBeforeURLRequest_HttpseFileWork, ctx),
-              base::Bind(
+              FROM_HERE,
+              base::BindRepeating(OnBeforeURLRequest_HttpseFileWork, ctx),
+              base::BindRepeating(
                   base::IgnoreResult(&OnBeforeURLRequest_HttpsePostFileWork),
                   next_callback, ctx));
       return net::ERR_IO_PENDING;

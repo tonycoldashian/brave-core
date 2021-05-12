@@ -147,11 +147,9 @@ void HTTPSEverywhereService::OnComponentReady(
     const std::string& component_id,
     const base::FilePath& install_dir,
     const std::string& manifest) {
-  GetTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&HTTPSEverywhereService::InitDB,
-                 AsWeakPtr(),
-                 install_dir));
+  GetTaskRunner()->PostTask(FROM_HERE,
+                            base::BindRepeating(&HTTPSEverywhereService::InitDB,
+                                                AsWeakPtr(), install_dir));
 }
 
 bool HTTPSEverywhereService::GetHTTPSURL(

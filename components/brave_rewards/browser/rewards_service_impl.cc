@@ -382,31 +382,29 @@ void RewardsServiceImpl::Init(
 void RewardsServiceImpl::InitPrefChangeRegistrar() {
   profile_pref_change_registrar_.Init(profile_->GetPrefs());
   profile_pref_change_registrar_.Add(
-      prefs::kHideButton, base::Bind(&RewardsServiceImpl::OnPreferenceChanged,
-                                     base::Unretained(this)));
+      prefs::kHideButton,
+      base::BindRepeating(&RewardsServiceImpl::OnPreferenceChanged,
+                          base::Unretained(this)));
   profile_pref_change_registrar_.Add(
       prefs::kInlineTipTwitterEnabled,
-      base::Bind(
-          &RewardsServiceImpl::OnPreferenceChanged,
-          base::Unretained(this)));
+      base::BindRepeating(&RewardsServiceImpl::OnPreferenceChanged,
+                          base::Unretained(this)));
   profile_pref_change_registrar_.Add(
       prefs::kInlineTipRedditEnabled,
-      base::Bind(
-          &RewardsServiceImpl::OnPreferenceChanged,
-          base::Unretained(this)));
+      base::BindRepeating(&RewardsServiceImpl::OnPreferenceChanged,
+                          base::Unretained(this)));
   profile_pref_change_registrar_.Add(
       prefs::kInlineTipGithubEnabled,
-      base::Bind(
-          &RewardsServiceImpl::OnPreferenceChanged,
-          base::Unretained(this)));
+      base::BindRepeating(&RewardsServiceImpl::OnPreferenceChanged,
+                          base::Unretained(this)));
   profile_pref_change_registrar_.Add(
       prefs::kAutoContributeEnabled,
-      base::Bind(
-          &RewardsServiceImpl::OnPreferenceChanged,
-          base::Unretained(this)));
+      base::BindRepeating(&RewardsServiceImpl::OnPreferenceChanged,
+                          base::Unretained(this)));
   profile_pref_change_registrar_.Add(
-      ads::prefs::kEnabled, base::Bind(&RewardsServiceImpl::OnPreferenceChanged,
-                                       base::Unretained(this)));
+      ads::prefs::kEnabled,
+      base::BindRepeating(&RewardsServiceImpl::OnPreferenceChanged,
+                          base::Unretained(this)));
 }
 
 void RewardsServiceImpl::OnPreferenceChanged(const std::string& key) {
@@ -463,8 +461,8 @@ void RewardsServiceImpl::StartLedgerProcessIfNecessary() {
             .WithDisplayName(IDS_UTILITY_PROCESS_LEDGER_NAME)
             .Pass());
 
-    bat_ledger_service_.set_disconnect_handler(
-      base::Bind(&RewardsServiceImpl::ConnectionClosed, AsWeakPtr()));
+    bat_ledger_service_.set_disconnect_handler(base::BindRepeating(
+        &RewardsServiceImpl::ConnectionClosed, AsWeakPtr()));
   }
 
   ledger::type::Environment environment = ledger::type::Environment::STAGING;
@@ -1858,8 +1856,8 @@ void RewardsServiceImpl::FetchFavIcon(
   if (image_service) {
     current_media_fetchers_[url] = image_service->RequestImage(
         parsedUrl,
-        base::Bind(&RewardsServiceImpl::OnFetchFavIconCompleted, AsWeakPtr(),
-                   callback, favicon_key, parsedUrl),
+        base::BindRepeating(&RewardsServiceImpl::OnFetchFavIconCompleted,
+                            AsWeakPtr(), callback, favicon_key, parsedUrl),
         GetNetworkTrafficAnnotationTagForFaviconFetch());
   }
 }
@@ -2131,9 +2129,8 @@ void RewardsServiceImpl::RemoveRecurringTip(
   }
 
   bat_ledger_->RemoveRecurringTip(
-    publisher_key,
-    base::Bind(&RewardsServiceImpl::OnRecurringTip,
-               AsWeakPtr()));
+      publisher_key,
+      base::BindRepeating(&RewardsServiceImpl::OnRecurringTip, AsWeakPtr()));
 }
 
 void RewardsServiceImpl::OnSetPublisherExclude(
@@ -2209,9 +2206,8 @@ void RewardsServiceImpl::OnNotificationTimerFired() {
   bat_ledger_->GetCreationStamp(
       base::BindOnce(&RewardsServiceImpl::MaybeShowBackupNotification,
         AsWeakPtr()));
-  GetReconcileStamp(
-      base::Bind(&RewardsServiceImpl::MaybeShowAddFundsNotification,
-        AsWeakPtr()));
+  GetReconcileStamp(base::BindRepeating(
+      &RewardsServiceImpl::MaybeShowAddFundsNotification, AsWeakPtr()));
   FetchPromotions();
 }
 

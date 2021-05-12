@@ -50,7 +50,7 @@ class PerformBridge : public base::RefCountedThreadSafe<PerformBridge> {
         FROM_HERE,
         {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-        base::Bind(&PerformBridge::Run, op.get()));
+        base::BindRepeating(&PerformBridge::Run, op.get()));
   }
 
   // Convenience for the no-argument case.

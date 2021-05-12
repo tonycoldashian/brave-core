@@ -122,9 +122,8 @@ BraveRewardsGetPublisherInfoFunction::Run() {
 
   rewards_service->GetPublisherInfo(
       params->publisher_key,
-      base::Bind(
-          &BraveRewardsGetPublisherInfoFunction::OnGetPublisherInfo,
-          this));
+      base::BindRepeating(
+          &BraveRewardsGetPublisherInfoFunction::OnGetPublisherInfo, this));
 
   return RespondLater();
 }
@@ -170,7 +169,7 @@ BraveRewardsGetPublisherPanelInfoFunction::Run() {
 
   rewards_service->GetPublisherPanelInfo(
       params->publisher_key,
-      base::Bind(
+      base::BindRepeating(
           &BraveRewardsGetPublisherPanelInfoFunction::OnGetPublisherPanelInfo,
           this));
 
@@ -225,11 +224,9 @@ BraveRewardsSavePublisherInfoFunction::Run() {
   publisher_info->favicon_url = params->fav_icon_url;
 
   rewards_service->SavePublisherInfo(
-      params->window_id,
-      std::move(publisher_info),
-      base::Bind(
-          &BraveRewardsSavePublisherInfoFunction::OnSavePublisherInfo,
-          this));
+      params->window_id, std::move(publisher_info),
+      base::BindRepeating(
+          &BraveRewardsSavePublisherInfoFunction::OnSavePublisherInfo, this));
 
   return RespondLater();
 }
@@ -331,8 +328,8 @@ void BraveRewardsTipUserFunction::OnProcessStarted(
   }
   rewards_service->GetPublisherInfo(
       publisher_key,
-      base::Bind(&BraveRewardsTipUserFunction::OnTipUserGetPublisherInfo,
-                 this));
+      base::BindRepeating(
+          &BraveRewardsTipUserFunction::OnTipUserGetPublisherInfo, this));
 }
 
 void BraveRewardsTipUserFunction::OnTipUserGetPublisherInfo(
@@ -368,11 +365,10 @@ void BraveRewardsTipUserFunction::OnTipUserGetPublisherInfo(
   }
 
   rewards_service->SavePublisherInfo(
-      0,
-      std::move(publisher_info),
-      base::Bind(&BraveRewardsTipUserFunction::
-                 OnTipUserSavePublisherInfo,
-                 weak_factory_.GetWeakPtr()));
+      0, std::move(publisher_info),
+      base::BindRepeating(
+          &BraveRewardsTipUserFunction::OnTipUserSavePublisherInfo,
+          weak_factory_.GetWeakPtr()));
 }
 
 void BraveRewardsTipUserFunction::OnTipUserSavePublisherInfo(
@@ -650,9 +646,9 @@ BraveRewardsGetPendingContributionsTotalFunction::Run() {
     return RespondNow(OneArgument(base::Value(0.0)));
   }
 
-  rewards_service->GetPendingContributionsTotal(base::Bind(
-        &BraveRewardsGetPendingContributionsTotalFunction::OnGetPendingTotal,
-        this));
+  rewards_service->GetPendingContributionsTotal(base::BindRepeating(
+      &BraveRewardsGetPendingContributionsTotalFunction::OnGetPendingTotal,
+      this));
   return RespondLater();
 }
 
@@ -747,11 +743,9 @@ BraveRewardsSaveRecurringTipFunction::Run() {
   }
 
   rewards_service_->SaveRecurringTip(
-      params->publisher_key,
-      params->new_amount,
-      base::Bind(
-          &BraveRewardsSaveRecurringTipFunction::OnSaveRecurringTip,
-          this));
+      params->publisher_key, params->new_amount,
+      base::BindRepeating(
+          &BraveRewardsSaveRecurringTipFunction::OnSaveRecurringTip, this));
 
   return RespondLater();
 }
@@ -798,9 +792,8 @@ BraveRewardsGetRecurringTipsFunction::Run() {
     return RespondNow(Error("Rewards service is not initialized"));
   }
 
-  rewards_service->GetRecurringTips(base::Bind(
-        &BraveRewardsGetRecurringTipsFunction::OnGetRecurringTips,
-        this));
+  rewards_service->GetRecurringTips(base::BindRepeating(
+      &BraveRewardsGetRecurringTipsFunction::OnGetRecurringTips, this));
   return RespondLater();
 }
 
@@ -1187,9 +1180,8 @@ BraveRewardsGetAnonWalletStatusFunction::Run() {
     return RespondNow(Error("Rewards service is not initialized"));
   }
 
-  rewards_service->GetAnonWalletStatus(base::Bind(
-        &BraveRewardsGetAnonWalletStatusFunction::OnGetAnonWalletStatus,
-        this));
+  rewards_service->GetAnonWalletStatus(base::BindRepeating(
+      &BraveRewardsGetAnonWalletStatusFunction::OnGetAnonWalletStatus, this));
   return RespondLater();
 }
 

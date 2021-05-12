@@ -642,16 +642,18 @@ void AdsServiceImpl::Initialize() {
   profile_pref_change_registrar_.Init(profile_->GetPrefs());
 
   profile_pref_change_registrar_.Add(
-      ads::prefs::kEnabled,
-      base::Bind(&AdsServiceImpl::OnPrefsChanged, base::Unretained(this)));
+      ads::prefs::kEnabled, base::BindRepeating(&AdsServiceImpl::OnPrefsChanged,
+                                                base::Unretained(this)));
 
   profile_pref_change_registrar_.Add(
       ads::prefs::kIdleTimeThreshold,
-      base::Bind(&AdsServiceImpl::OnPrefsChanged, base::Unretained(this)));
+      base::BindRepeating(&AdsServiceImpl::OnPrefsChanged,
+                          base::Unretained(this)));
 
   profile_pref_change_registrar_.Add(
       brave_rewards::prefs::kWalletBrave,
-      base::Bind(&AdsServiceImpl::OnPrefsChanged, base::Unretained(this)));
+      base::BindRepeating(&AdsServiceImpl::OnPrefsChanged,
+                          base::Unretained(this)));
 
   MaybeStart(false);
 }
@@ -716,7 +718,7 @@ bool AdsServiceImpl::StartService() {
             .Pass());
 
     bat_ads_service_.set_disconnect_handler(
-        base::Bind(&AdsServiceImpl::MaybeStart, AsWeakPtr(), true));
+        base::BindRepeating(&AdsServiceImpl::MaybeStart, AsWeakPtr(), true));
   }
 
   SetEnvironment();
@@ -1071,8 +1073,8 @@ void AdsServiceImpl::OpenNewTabWithUrl(const std::string& url) {
                                       WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                       ui::PAGE_TRANSITION_LINK, true);
 
-  base::Callback<void(content::WebContents*)> callback =
-      base::Bind([](content::WebContents*) {});
+  base::RepeatingCallback<void(content::WebContents*)> callback =
+      base::BindRepeating([](content::WebContents*) {});
 
   ServiceTabLauncher::GetInstance()->LaunchTab(profile_, params, callback);
 #else
