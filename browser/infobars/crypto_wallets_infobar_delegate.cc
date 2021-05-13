@@ -16,9 +16,9 @@
 #include "brave/components/brave_wallet/browser/pref_names.h"
 #include "brave/grit/brave_generated_resources.h"
 #include "chrome/browser/infobars/confirm_infobar_creator.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/grit/chromium_strings.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/infobar.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -29,9 +29,10 @@
 #include "ui/views/vector_icons.h"
 
 // static
-void CryptoWalletsInfoBarDelegate::Create(InfoBarService* infobar_service,
+void CryptoWalletsInfoBarDelegate::Create(
+    infobars::ContentInfoBarManager* infobar_manager,
     CryptoWalletsInfoBarDelegate::InfobarSubType subtype) {
-  infobar_service->AddInfoBar(
+  infobar_manager->AddInfoBar(
       CreateConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate>(
           new CryptoWalletsInfoBarDelegate(subtype))));
 }
@@ -95,7 +96,7 @@ GURL CryptoWalletsInfoBarDelegate::GetLinkURL() const {
 bool CryptoWalletsInfoBarDelegate::Accept() {
   if (subtype_ == InfobarSubType::LOAD_CRYPTO_WALLETS) {
     content::WebContents* web_contents =
-      InfoBarService::WebContentsFromInfoBar(infobar());
+      infobars::ContentInfoBarManager::WebContentsFromInfoBar(infobar());
     if (web_contents) {
       auto* browser_context = web_contents->GetBrowserContext();
       auto* service = BraveWalletServiceFactory::GetForContext(browser_context);
@@ -107,7 +108,7 @@ bool CryptoWalletsInfoBarDelegate::Accept() {
   }
   if (infobar() && infobar()->owner()) {
     content::WebContents* web_contents =
-      InfoBarService::WebContentsFromInfoBar(infobar());
+      infobars::ContentInfoBarManager::WebContentsFromInfoBar(infobar());
     if (web_contents) {
       auto* browser_context = web_contents->GetBrowserContext();
       user_prefs::UserPrefs::Get(browser_context)->
@@ -122,7 +123,7 @@ bool CryptoWalletsInfoBarDelegate::Accept() {
 
 bool CryptoWalletsInfoBarDelegate::Cancel() {
   content::WebContents* web_contents =
-    InfoBarService::WebContentsFromInfoBar(infobar());
+    infobars::ContentInfoBarManager::WebContentsFromInfoBar(infobar());
   if (web_contents) {
     if (subtype_ == InfobarSubType::GENERIC_SETUP) {
       auto* browser_context = web_contents->GetBrowserContext();

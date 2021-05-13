@@ -684,6 +684,8 @@ if (!is_android) {
         "//brave/browser/infobars",
         "//brave/components/brave_wallet/browser",
         "//brave/components/brave_wallet/common",
+        "//components/infobars/content",
+        "//components/infobars/core",
       ]
     }
 

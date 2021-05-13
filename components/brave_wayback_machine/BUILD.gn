@@ -27,6 +27,7 @@ source_set("brave_wayback_machine") {
 
   deps = [
     "//base",
+    "//components/infobars/content",
     "//components/infobars/core",
     "//components/prefs",
     "//components/user_prefs",

@@ -106,6 +106,8 @@ source_set("extensions") {
     deps += [
       "//brave/components/brave_wallet/browser",
       "//brave/components/brave_wallet/common",
+      "//components/infobars/content",
+      "//components/prefs",
     ]
   }
 
