@@ -56,13 +56,13 @@ export const updateConfigValue = (path: string, value: string) =>
   action(types.IPFS_UPDATE_CONFIG_VALUE, {
     path, value
   })
-export const onGetConfigValue = (success: boolean, response: string) =>
+export const onGetConfigValue = (response: string) =>
   action(types.IPFS_ON_GET_CONFIG_VALUE, {
-    success, response
+    response
   })
-export const onConfigUpdated = (success: boolean, response: string) =>
+export const onConfigUpdated = (value: string) =>
   action(types.IPFS_ON_CONFIG_UPDATED, {
-    success, response
+    value
   })
 export const launchDaemon = () => action(types.IPFS_LAUNCH_DAEMON)
 export const shutdownDaemon = () => action(types.IPFS_SHUTDOWN_DAEMON)
