@@ -323,7 +323,6 @@ bool IPFSJSONParser::GetParseKeysFromJSON(
 bool IPFSJSONParser::GetParseSingleKeyFromJSON(const std::string& json,
                                                std::string* name,
                                                std::string* value) {
-  DLOG(INFO) << "json:" << json;
   base::JSONReader::ValueWithError value_with_error =
       base::JSONReader::ReadAndReturnValueWithError(
           json, base::JSONParserOptions::JSON_PARSE_RFC);
@@ -341,6 +340,40 @@ bool IPFSJSONParser::GetParseSingleKeyFromJSON(const std::string& json,
   }
   const std::string* key_name = response_dict->FindStringKey("Name");
   const std::string* key_id = response_dict->FindStringKey("Id");
+  if (!key_name || !key_id)
+    return false;
+  *name = *key_name;
+  *value = *key_id;
+  return true;
+}
+
+// static
+// Response Format for /api/v0/config
+// {"Key":"Peering.Peers",
+//  "Value":[
+//     {"Addrs":["/ip4/104.131.131.82/tcp/4001"],
+//     "ID":"QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ"}
+//  ]
+//}
+bool IPFSJSONParser::GetParseConfigValueFromJSON(
+    const std::string& json, std::string* name, std::string* value) {
+  base::JSONReader::ValueWithError value_with_error =
+      base::JSONReader::ReadAndReturnValueWithError(
+          json, base::JSONParserOptions::JSON_PARSE_RFC);
+  base::Optional<base::Value>& records_v = value_with_error.value;
+  if (!records_v) {
+    VLOG(1) << "Invalid response, could not parse JSON, JSON is: " << json
+            << " error is:" << value_with_error.error_message;
+    return false;
+  }
+
+  const base::DictionaryValue* response_dict;
+  if (!records_v->GetAsDictionary(&response_dict) || !response_dict) {
+    VLOG(1) << "Invalid response, could not parse JSON, JSON is: " << json;
+    return false;
+  }
+  const std::string* key_name = response_dict->FindStringKey("Key");
+  const std::string* key_id = response_dict->FindStringKey("Value");
   if (!key_name || !key_id)
     return false;
   *name = *key_name;

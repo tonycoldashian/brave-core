@@ -33,6 +33,7 @@ const ipfsReducer: Reducer<IPFS.State | undefined> = (state: IPFS.State | undefi
   switch (action.type) {
     case types.IPFS_GET_CONNECTED_PEERS:
       chrome.send('ipfs.getConnectedPeers')
+      chrome.send('ipfs.getConfigValue', ['Peering.Peers'])
       break
     case types.IPFS_ON_GET_CONNECTED_PEERS:
       state = {
@@ -51,6 +52,18 @@ const ipfsReducer: Reducer<IPFS.State | undefined> = (state: IPFS.State | undefi
         ...state,
         nodeInfo: action.payload.nodeInfo
       }
+      break
+    case types.IPFS_GET_CONFIG_VALUE:
+      chrome.send('ipfs.getConfigValue', [action.payload.value])
+      break
+    case types.IPFS_UPDATE_CONFIG_VALUE:
+      chrome.send('ipfs.updateConfigValue', [action.payload.path, action.payload.value])
+      break
+    case types.IPFS_ON_GET_CONFIG_VALUE:
+      console.log(action.payload)
+      break
+    case types.IPFS_ON_CONFIG_UPDATED:
+      console.log(action.payload)
       break
     case types.IPFS_GET_REPO_STATS:
       chrome.send('ipfs.getRepoStats')

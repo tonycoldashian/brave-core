@@ -82,12 +82,20 @@ void IPFSDOMHandler::RegisterMessages() {
       "ipfs.garbageCollection",
       base::BindRepeating(&IPFSDOMHandler::HandleGarbageCollection,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "ipfs.updateConfigValue",
+      base::BindRepeating(&IPFSDOMHandler::HandleUpdateConfigValue,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "ipfs.getConfigValue",
+      base::BindRepeating(&IPFSDOMHandler::HandleGetConfigValue,
+                          base::Unretained(this)));
+
   ipfs::IpfsService* service = ipfs::IpfsServiceFactory::GetForContext(
       web_ui()->GetWebContents()->GetBrowserContext());
   if (!service) {
     return;
   }
-
   service_observer_.Observe(service);
 }
 
@@ -99,6 +107,53 @@ IPFSUI::IPFSUI(content::WebUI* web_ui, const std::string& name)
 }
 
 IPFSUI::~IPFSUI() {}
+
+void IPFSDOMHandler::HandleUpdateConfigValue(const base::ListValue* args) {
+  CHECK_EQ(args->GetSize(), 2U);
+  auto path = args->GetList()[0].GetString();
+  auto value = args->GetList()[1].GetString();
+  ipfs::IpfsService* service = ipfs::IpfsServiceFactory::GetForContext(
+      web_ui()->GetWebContents()->GetBrowserContext());
+  if (!service) {
+    return;
+  }
+  service->SetConfigValue(path, true, value, base::BindOnce(
+      &IPFSDOMHandler::OnConfigUpdated, weak_ptr_factory_.GetWeakPtr()));
+}
+
+void IPFSDOMHandler::HandleGetConfigValue(const base::ListValue* args) {
+  CHECK_EQ(args->GetSize(), 1U);
+  auto path = args->GetList()[0].GetString();
+  ipfs::IpfsService* service = ipfs::IpfsServiceFactory::GetForContext(
+      web_ui()->GetWebContents()->GetBrowserContext());
+  if (!service) {
+    return;
+  }
+  service->GetConfigValue(path, true, base::BindOnce(
+      &IPFSDOMHandler::OnGetConfigValue, weak_ptr_factory_.GetWeakPtr()));
+}
+
+void IPFSDOMHandler::OnGetConfigValue(bool success, const std::string& response) {
+  DLOG(INFO) << "OnGetConfigValue:" << success << " response:" << response;
+  base::Value node_value(base::Value::Type::DICTIONARY);
+  node_value.SetBoolKey("success", success);
+  node_value.SetStringKey("response", response);
+
+  web_ui()->CallJavascriptFunctionUnsafe("ipfs.onGetConfigValue",
+                                         std::move(node_value));
+
+}
+
+void IPFSDOMHandler::OnConfigUpdated(bool success, const std::string& response) {
+  DLOG(INFO) << "OnConfigUpdated:" << success << " response:" << response;
+  base::Value node_value(base::Value::Type::DICTIONARY);
+  node_value.SetBoolKey("success", success);
+  node_value.SetStringKey("response", response);
+
+  web_ui()->CallJavascriptFunctionUnsafe("ipfs.onConfigUpdated",
+                                         std::move(node_value));
+
+}
 
 void IPFSDOMHandler::HandleGetConnectedPeers(const base::ListValue* args) {
   DCHECK_EQ(args->GetSize(), 0U);

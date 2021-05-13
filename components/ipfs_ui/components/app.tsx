@@ -62,6 +62,14 @@ export class IPFSPage extends React.Component<Props, {}> {
     this.actions.openPeersWebUI()
   }
 
+  getConfigValue = (path: string) => {
+    this.actions.getConfigValue(path)
+  }
+
+  updateConfigValue = (path: string, value: string) => {
+    this.actions.updateConfigValue(path, value)
+  }
+
   refreshActions = () => {
     this.actions.getConnectedPeers()
     this.actions.getAddressesConfig()
@@ -93,7 +101,7 @@ export class IPFSPage extends React.Component<Props, {}> {
           this.props.ipfsData.daemonStatus.restarting ||
           !this.props.ipfsData.daemonStatus.launched) ? GrayStyle : {}}
         >
-          <ConnectedPeers addressesConfig={this.props.ipfsData.addressesConfig} peerCount={this.props.ipfsData.connectedPeers.peerCount} onOpenPeersWebUI={this.openPeersWebUI} />
+          <ConnectedPeers daemonStatus={this.props.ipfsData.daemonStatus} getConfigValue={this.getConfigValue} updateConfigValue={this.updateConfigValue} addressesConfig={this.props.ipfsData.addressesConfig} peerCount={this.props.ipfsData.connectedPeers.peerCount} onOpenPeersWebUI={this.openPeersWebUI} />
           <AddressesConfig addressesConfig={this.props.ipfsData.addressesConfig} />
           <RepoStats repoStats={this.props.ipfsData.repoStats} daemonStatus={this.props.ipfsData.daemonStatus} garbageCollectionStatus={this.props.ipfsData.garbageCollectionStatus} onGarbageCollection={this.garbageCollection} />
           <NodeInfo nodeInfo={this.props.ipfsData.nodeInfo} />

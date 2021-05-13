@@ -35,6 +35,8 @@ class IPFSJSONParser {
   static bool GetParseSingleKeyFromJSON(const std::string& json,
                                         std::string* name,
                                         std::string* value);
+  static bool GetParseConfigValueFromJSON(const std::string& json,
+      std::string* name, std::string* value);
 };
 
 #endif  // BRAVE_COMPONENTS_IPFS_IPFS_JSON_PARSER_H_

@@ -11,15 +11,18 @@ import { Section, BlueLink } from '../style'
 
 interface Props {
   addressesConfig: IPFS.AddressesConfig
-  peerCount: number
-  onOpenPeersWebUI: () => void
+  peerCount: number,
+  daemonStatus: IPFS.DaemonStatus,
+  onOpenPeersWebUI: () => void,
+  getConfigValue: (value: string) => void,
+  updateConfigValue: (name: string, value: string) => void,
 }
 
 export class ConnectedPeers extends React.Component<Props, {}> {
   constructor (props: Props) {
     super(props)
   }
-
+  
   render () {
     return (
       <Section>

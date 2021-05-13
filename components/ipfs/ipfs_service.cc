@@ -753,4 +753,91 @@ void IpfsService::OnPreWarmComplete(
     std::move(prewarm_callback_for_testing_).Run();
 }
 
+void IpfsService::SetConfigValue(const std::string& path, bool json,
+                                 const std::string& value,
+                                 ConfigValueCallback callback) {
+  if (!IsDaemonLaunched()) {
+    std::move(callback).Run(false, std::string());
+    return;
+  }
+
+  GURL gurl = net::AppendQueryParameter(server_endpoint_.Resolve(kConfigPath),
+                                        kArgQueryParam, path);
+  gurl = net::AppendQueryParameter(gurl, kArgQueryParam, value);
+  if (json) {
+    gurl = net::AppendQueryParameter(gurl, "json", "true");
+  }
+  auto url_loader = CreateURLLoader(gurl, "POST");
+  auto iter = url_loaders_.insert(url_loaders_.begin(), std::move(url_loader));
+
+  iter->get()->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&IpfsService::OnSetConfigValue, base::Unretained(this),
+                     iter, std::move(callback)));
+}
+
+void IpfsService::OnSetConfigValue(
+    SimpleURLLoaderList::iterator iter,
+    ConfigValueCallback callback,
+    std::unique_ptr<std::string> response_body) {
+  auto* url_loader = iter->get();
+  int error_code = url_loader->NetError();
+  int response_code = -1;
+  if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers)
+    response_code = url_loader->ResponseInfo()->headers->response_code();
+  url_loaders_.erase(iter);
+
+  bool success = (error_code == net::OK && response_code == net::HTTP_OK);
+  if (!success) {
+    VLOG(1) << "Fail to get addresses config, error_code = " << error_code
+            << " response_code = " << response_code;
+  }
+  std::string response = response_body.get() ? *response_body : std::string();
+  if (callback)
+    std::move(callback).Run(success, response);
+}
+
+void IpfsService::GetConfigValue(const std::string& path, bool json,
+                                 ConfigValueCallback callback) {
+  if (!IsDaemonLaunched()) {
+    if (callback)
+      std::move(callback).Run(false, std::string());
+    return;
+  }
+
+  GURL gurl = net::AppendQueryParameter(server_endpoint_.Resolve(kConfigPath),
+                                        kArgQueryParam, path);
+  if (json) {
+    gurl = net::AppendQueryParameter(gurl, "json", "true");
+  }
+  auto url_loader = CreateURLLoader(gurl, "POST");
+  auto iter = url_loaders_.insert(url_loaders_.begin(), std::move(url_loader));
+
+  iter->get()->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&IpfsService::OnGetConfigValue, base::Unretained(this),
+                     iter, std::move(callback)));
+}
+
+void IpfsService::OnGetConfigValue(
+    SimpleURLLoaderList::iterator iter,
+    ConfigValueCallback callback,
+    std::unique_ptr<std::string> response_body) {
+  auto* url_loader = iter->get();
+  int error_code = url_loader->NetError();
+  int response_code = -1;
+  if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers)
+    response_code = url_loader->ResponseInfo()->headers->response_code();
+  url_loaders_.erase(iter);
+
+  bool success = (error_code == net::OK && response_code == net::HTTP_OK);
+  if (!success) {
+    VLOG(1) << "Fail to get addresses config, error_code = " << error_code
+            << " response_code = " << response_code;
+  }
+  std::string response = response_body.get() ? *response_body : std::string();
+  if (callback)
+    std::move(callback).Run(success, response);
+}
+
 }  // namespace ipfs

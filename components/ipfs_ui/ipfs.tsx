@@ -92,6 +92,14 @@ window.cr.define('ipfs', function () {
     const actions = bindActionCreators(ipfsActions, store.dispatch.bind(store))
     actions.onGetNodeInfo(nodeInfo)
   }
+  function onConfigUpdated (value: string) {
+    const actions = bindActionCreators(ipfsActions, store.dispatch.bind(store))
+    actions.onConfigUpdated(value)
+  }
+  function onGetConfigValue (value: string) {
+    const actions = bindActionCreators(ipfsActions, store.dispatch.bind(store))
+    actions.onGetConfigValue(value)
+  }
 
   function onGarbageCollection (garbageCollectionStatus: IPFS.GarbageCollectionStatus) {
     const actions = bindActionCreators(ipfsActions, store.dispatch.bind(store))
@@ -105,6 +113,8 @@ window.cr.define('ipfs', function () {
     onGetDaemonStatus,
     onGetRepoStats,
     onGetNodeInfo,
+    onConfigUpdated,
+    onGetConfigValue,
     onGarbageCollection,
     onInstallationProgress
   }

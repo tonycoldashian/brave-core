@@ -75,6 +75,8 @@ class IpfsService : public KeyedService,
   using LaunchDaemonCallback = base::OnceCallback<void(bool)>;
   using ShutdownDaemonCallback = base::OnceCallback<void(bool)>;
   using GetConfigCallback = base::OnceCallback<void(bool, const std::string&)>;
+  using ConfigValueCallback =
+      base::OnceCallback<void(bool, const std::string&)>;
 
   // Retry after some time If local node responded with error.
   // The connected peers are often called immediately after startup
@@ -122,6 +124,11 @@ class IpfsService : public KeyedService,
   void GetRepoStats(GetRepoStatsCallback callback);
   void GetNodeInfo(GetNodeInfoCallback callback);
   void RunGarbageCollection(GarbageCollectionCallback callback);
+  void GetConfigValue(const std::string& path, bool json,
+                      ConfigValueCallback callback);
+  void SetConfigValue(const std::string& path, bool json,
+      const std::string& value, ConfigValueCallback callback);
+
 
   void SetAllowIpfsLaunchForTest(bool launched);
   void SetServerEndpointForTest(const GURL& gurl);
@@ -158,6 +165,12 @@ class IpfsService : public KeyedService,
   void LaunchIfNotRunning(const base::FilePath& executable_path);
   base::TimeDelta CalculatePeersRetryTime();
 
+  void OnSetConfigValue(SimpleURLLoaderList::iterator iter,
+                        ConfigValueCallback callback,
+                        std::unique_ptr<std::string> response_body);
+  void OnGetConfigValue(SimpleURLLoaderList::iterator iter,
+                        ConfigValueCallback callback,
+                        std::unique_ptr<std::string> response_body);
   void OnGetConnectedPeers(SimpleURLLoaderList::iterator iter,
                            GetConnectedPeersCallback,
                            int retries,

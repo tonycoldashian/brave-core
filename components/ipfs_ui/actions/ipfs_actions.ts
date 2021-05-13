@@ -8,7 +8,7 @@ import { action } from 'typesafe-actions'
 // Constants
 import { types } from '../constants/ipfs_types'
 
-export const getConnectedPeers = () => action(types.IPFS_GET_CONNECTED_PEERS)
+export const getConnectedPeers = () =>  action(types.IPFS_GET_CONNECTED_PEERS)
 
 export const onGetConnectedPeers = (peerCount: number) =>
   action(types.IPFS_ON_GET_CONNECTED_PEERS, {
@@ -48,6 +48,22 @@ export const onGetNodeInfo = (nodeInfo: IPFS.NodeInfo) =>
     nodeInfo
   })
 
+export const getConfigValue = (value: string) =>
+  action(types.IPFS_GET_CONFIG_VALUE, {
+    value
+  })
+export const updateConfigValue = (path: string, value: string) =>
+  action(types.IPFS_UPDATE_CONFIG_VALUE, {
+    path, value
+  })
+export const onGetConfigValue = (success: boolean, response: string) =>
+  action(types.IPFS_ON_GET_CONFIG_VALUE, {
+    success, response
+  })
+export const onConfigUpdated = (success: boolean, response: string) =>
+  action(types.IPFS_ON_CONFIG_UPDATED, {
+    success, response
+  })
 export const launchDaemon = () => action(types.IPFS_LAUNCH_DAEMON)
 export const shutdownDaemon = () => action(types.IPFS_SHUTDOWN_DAEMON)
 export const restartDaemon = () => action(types.IPFS_RESTART_DAEMON)

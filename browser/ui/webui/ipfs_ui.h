@@ -58,6 +58,12 @@ class IPFSDOMHandler : public content::WebUIMessageHandler,
   void HandleGarbageCollection(const base::ListValue* args);
   void OnGarbageCollection(bool success, const std::string& error);
 
+  void HandleUpdateConfigValue(const base::ListValue* args);
+  void OnConfigUpdated(bool success, const std::string& response);
+
+  void HandleGetConfigValue(const base::ListValue* args);
+  void OnGetConfigValue(bool success, const std::string& response);
+
   base::ScopedObservation<ipfs::IpfsService, ipfs::IpfsServiceObserver>
       service_observer_{this};
   base::WeakPtrFactory<IPFSDOMHandler> weak_ptr_factory_;
