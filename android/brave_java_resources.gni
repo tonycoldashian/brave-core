@@ -765,8 +765,6 @@ brave_java_resources = [
   "java/res/layout/uphold_login_popup_window.xml",
   "java/res/layout/user_wallet_activity.xml",
   "java/res/layout/verify_wallet_activity.xml",
-  "java/res/layout/web_notification_big_brave_ads.xml",
-  "java/res/layout/web_notification_brave_ads.xml",
   "java/res/layout/web_notification_icon_frame_brave.xml",
   "java/res/menu/exit_settings_menu.xml",
   "java/res/menu/new_tab_menu.xml",
