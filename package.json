@@ -250,7 +250,7 @@
     "@storybook/addons": "6.2.9",
     "@storybook/react": "6.2.9",
     "@types/array-move": "2.0.0",
-    "@types/bluebird": "3.5.33",
+    "@types/bluebird": "3.5.35",
     "@types/chrome": "0.0.133",
     "@types/enzyme": "3.10.8",
     "@types/enzyme-adapter-react-16": "1.0.6",
