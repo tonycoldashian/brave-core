@@ -215,6 +215,7 @@ bool BraveMainDelegate::BasicStartupComplete(int* exit_code) {
     features::kDirectSockets.name,
     features::kIdleDetection.name,
     features::kLangClientHintHeader.name,
+    features::kNewProfilePicker.name,
     features::kNotificationTriggers.name,
     features::kSignedExchangePrefetchCacheForNavigations.name,
     features::kSignedExchangeSubresourcePrefetch.name,
