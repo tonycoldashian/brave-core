@@ -5,6 +5,7 @@
 
 import("//build/config/ios/rules.gni")
 import("//brave/ios/app/headers.gni")
+import("//brave/ios/browser/api/networking/headers.gni")
 
 config("internal_config") {
   visibility = [
@@ -157,6 +158,7 @@ ios_framework_bundle("brave_rewards_ios_framework") {
   ]
 
   public_headers += brave_core_public_headers
+  public_headers += brave_core_networking_public_headers
 
   frameworks = [
     "Foundation.framework",
