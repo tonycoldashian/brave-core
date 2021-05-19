@@ -326,6 +326,7 @@ RewardsServiceImpl::RewardsServiceImpl(Profile* profile)
           new DiagnosticLog(profile_->GetPath().Append(kDiagnosticLogPath),
                             kDiagnosticLogMaxFileSize,
                             kDiagnosticLogKeepNumLines)),
+      ledger_database_(nullptr, base::OnTaskRunnerDeleter(file_task_runner_)),
       notification_service_(new RewardsNotificationServiceImpl(profile)),
       next_timer_id_(0) {
   // Set up the rewards data source
@@ -339,9 +340,6 @@ RewardsServiceImpl::RewardsServiceImpl(Profile* profile)
 
 RewardsServiceImpl::~RewardsServiceImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (ledger_database_) {
-    file_task_runner_->DeleteSoon(FROM_HERE, ledger_database_.release());
-  }
   StopNotificationTimers();
 }
 
@@ -1444,9 +1442,7 @@ void RewardsServiceImpl::Reset() {
   bat_ledger_client_receiver_.reset();
   bat_ledger_service_.reset();
   ready_ = std::make_unique<base::OneShotEvent>();
-  bool success =
-      file_task_runner_->DeleteSoon(FROM_HERE, ledger_database_.release());
-  BLOG_IF(1, !success, "Database was not released");
+  ledger_database_.reset();
   BLOG(1, "Successfully reset rewards service");
 }
 
@@ -3140,20 +3136,22 @@ void RewardsServiceImpl::ReconcileStampReset() {
 ledger::type::DBCommandResponsePtr RunDBTransactionOnFileTaskRunner(
     ledger::type::DBTransactionPtr transaction,
     ledger::LedgerDatabase* database) {
+  DCHECK(database);
   auto response = ledger::type::DBCommandResponse::New();
-  if (!database) {
-    response->status = ledger::type::DBCommandResponse::Status::RESPONSE_ERROR;
-  } else {
-    database->RunTransaction(std::move(transaction), response.get());
-  }
-
+  database->RunTransaction(std::move(transaction), response.get());
   return response;
 }
 
 void RewardsServiceImpl::RunDBTransaction(
     ledger::type::DBTransactionPtr transaction,
     ledger::client::RunDBTransactionCallback callback) {
-  DCHECK(ledger_database_);
+  if (!ledger_database_) {
+    auto response = ledger::type::DBCommandResponse::New();
+    response->status = ledger::type::DBCommandResponse::Status::RESPONSE_ERROR;
+    callback(std::move(response));
+    return;
+  }
+
   base::PostTaskAndReplyWithResult(
       file_task_runner_.get(), FROM_HERE,
       base::BindOnce(&RunDBTransactionOnFileTaskRunner, std::move(transaction),
