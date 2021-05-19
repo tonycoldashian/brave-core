@@ -313,7 +313,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
       TestExtensionSearchEngine(prefs);
   ExpectSimilar(extension_dse.get(), &current_dse->data());
 
-  Profile* incognito_profile = profile()->GetPrimaryOTRProfile();
+  Profile* incognito_profile =
+      profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true);
 
   auto* incognito_url_service =
       TemplateURLServiceFactory::GetForProfile(incognito_profile);
