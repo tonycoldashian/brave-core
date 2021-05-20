@@ -83,12 +83,25 @@ class BraveIpfsClientUpdater : public BraveComponent,
                                   const base::FilePath& user_data_dir);
   ~BraveIpfsClientUpdater() override;
 
+  using LaunchExecutableCallback =
+        base::OnceCallback<void(const base::FilePath&)>;
+  using MigrationCompletedCallback =
+        base::OnceCallback<void(bool)>;
+
   void Register();
+
   base::FilePath GetExecutablePath() const;
+
   scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() {
     return task_runner_;
   }
-
+  
+  void MigrateVersions(const base::FilePath& source,
+                       const base::FilePath& target,
+                       LaunchExecutableCallback callback);
+  void MigrationCompleted(
+      LaunchExecutableCallback callback, const base::FilePath& source,
+    const base::FilePath& target, bool success);
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
   void Cleanup();

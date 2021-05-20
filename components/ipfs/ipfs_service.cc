@@ -107,6 +107,7 @@ IpfsService::IpfsService(content::BrowserContext* context,
   if (ipfs_client_updater_) {
     ipfs_client_updater_->AddObserver(this);
     OnExecutableReady(ipfs_client_updater_->GetExecutablePath());
+    RegisterIpfsClientUpdater();
   }
   ipns_keys_manager_ =
       std::make_unique<IpnsKeysManager>(context_, server_endpoint_);
@@ -114,6 +115,10 @@ IpfsService::IpfsService(content::BrowserContext* context,
 }
 
 IpfsService::~IpfsService() {
+  if (ipfs_client_updater_) {
+    ipfs_client_updater_->RemoveObserver(this);
+  }
+
   RemoveObserver(ipns_keys_manager_.get());
   Shutdown();
 }
@@ -145,15 +150,33 @@ void IpfsService::OnInstallationEvent(ComponentUpdaterEvents event) {
 }
 
 void IpfsService::OnExecutableReady(const base::FilePath& path) {
-  if (path.empty())
+  if (path.empty() || migration_started_)
     return;
 
+  base::FilePath current = GetIpfsExecutablePath();
+  bool new_version_available = (!current.empty() && current != path);
+  if (new_version_available && IsDaemonLaunched() &&
+      !pending_launch_callbacks_.empty()) {
+    // Postpone update at time when daemon is not used.
+  //  return;
+  }
+
+  if (new_version_available) {
+    //auto migration_completed = base::BindOnce(&IpfsService::LaunchExecutable,
+        //weak_factory_.GetWeakPtr());
+    //ipfs_client_updater_->MigrateVersions(current, path,
+    //  std::move(migration_completed));
+    //migration_started_ = true;
+    //return;
+  }
+
+  LaunchExecutable(path);
+}
+
+void IpfsService::LaunchExecutable(const base::FilePath& path) {
   PrefService* prefs = user_prefs::UserPrefs::Get(context_);
   prefs->SetFilePath(kIPFSBinaryPath, path);
-
-  if (ipfs_client_updater_) {
-    ipfs_client_updater_->RemoveObserver(this);
-  }
+  migration_started_ = false;
   LaunchIfNotRunning(path);
 }
 
@@ -163,9 +186,8 @@ std::string IpfsService::GetStorageSize() {
 }
 
 void IpfsService::LaunchIfNotRunning(const base::FilePath& executable_path) {
-  if (ipfs_service_.is_bound())
+  if (ipfs_service_.is_bound() || migration_started_)
     return;
-
   content::ServiceProcessHost::Launch(
       ipfs_service_.BindNewPipeAndPassReceiver(),
       content::ServiceProcessHost::Options()

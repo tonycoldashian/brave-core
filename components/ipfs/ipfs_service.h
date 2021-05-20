@@ -142,6 +142,7 @@ class IpfsService : public KeyedService,
 
  protected:
   void OnConfigLoaded(GetConfigCallback, const std::pair<bool, std::string>&);
+  void LaunchExecutable(const base::FilePath& path);
 
  private:
   using SimpleURLLoaderList =
@@ -204,7 +205,7 @@ class IpfsService : public KeyedService,
 
   // This member is used to guard public methods that mutate state.
   bool reentrancy_guard_ = false;
-
+  bool migration_started_ = false;
   base::FilePath user_data_dir_;
   BraveIpfsClientUpdater* ipfs_client_updater_;
   version_info::Channel channel_;

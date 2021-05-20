@@ -76,6 +76,7 @@ void IpfsServiceImpl::Cleanup() {
 void IpfsServiceImpl::Launch(mojom::IpfsConfigPtr config,
                              LaunchCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  ::MessageBox(NULL, NULL, NULL, NULL);
   if (in_shutdown_) {
     if (callback)
       std::move(callback).Run(false, -1);
