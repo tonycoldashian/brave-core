@@ -105,7 +105,10 @@ class BraveSearchTest : public InProcessBrowserTest {
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
 };
 
-IN_PROC_BROWSER_TEST_F(BraveSearchTest, CheckForAFunction) {
+// FIXME: Reimplement this test so that it does not crash the renderer due to
+// hitting the DCHECK in V8 on development builds (v8/src/api/api-inl.h:183).
+// See https://github.com/brave/brave-browser/issues/16006
+IN_PROC_BROWSER_TEST_F(BraveSearchTest, DISABLED_CheckForAFunction) {
   GURL url = https_server()->GetURL(kAllowedDomain, "/bravesearch.html");
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* contents =
@@ -117,7 +120,10 @@ IN_PROC_BROWSER_TEST_F(BraveSearchTest, CheckForAFunction) {
   EXPECT_EQ(base::Value(true), result_first.value);
 }
 
-IN_PROC_BROWSER_TEST_F(BraveSearchTest, CheckForAFunctionDev) {
+// FIXME: Reimplement this test so that it does not crash the renderer due to
+// hitting the DCHECK in V8 on development builds (v8/src/api/api-inl.h:183).
+// See https://github.com/brave/brave-browser/issues/16006
+IN_PROC_BROWSER_TEST_F(BraveSearchTest, DISABLED_CheckForAFunctionDev) {
   GURL url = https_server()->GetURL(kAllowedDomainDev, "/bravesearch.html");
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* contents =
@@ -129,7 +135,10 @@ IN_PROC_BROWSER_TEST_F(BraveSearchTest, CheckForAFunctionDev) {
   EXPECT_EQ(base::Value(true), result_first.value);
 }
 
-IN_PROC_BROWSER_TEST_F(BraveSearchTest, CheckForAnUndefinedFunction) {
+// FIXME: Reimplement this test so that it does not crash the renderer due to
+// hitting the DCHECK in V8 on development builds (v8/src/api/api-inl.h:183).
+// See https://github.com/brave/brave-browser/issues/16006
+IN_PROC_BROWSER_TEST_F(BraveSearchTest, DISABLED_CheckForAnUndefinedFunction) {
   GURL url = https_server()->GetURL(kNotAllowedDomain, "/bravesearch.html");
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* contents =
