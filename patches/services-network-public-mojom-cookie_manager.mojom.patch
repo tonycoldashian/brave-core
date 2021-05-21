@@ -1,5 +1,5 @@
 diff --git a/services/network/public/mojom/cookie_manager.mojom b/services/network/public/mojom/cookie_manager.mojom
-index 3efaabbf59b5afe8c735b5f365231407a7b51103..fe3525e7bdea969bb0ff90e412f19459fef16189 100644
+index 82f7405b7f8bef9ab492e731a4c4ad1ee45791a3..b828b0bb51705188731e8b75e33658e981a6a296 100644
 --- a/services/network/public/mojom/cookie_manager.mojom
 +++ b/services/network/public/mojom/cookie_manager.mojom
 @@ -284,6 +284,7 @@ struct CookieDeletionFilter {
