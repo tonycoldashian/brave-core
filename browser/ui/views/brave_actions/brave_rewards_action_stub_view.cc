@@ -64,7 +64,7 @@ BraveRewardsActionStubView::BraveRewardsActionStubView(
       delegate_(delegate) {
   ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
   ink_drop()->SetBaseColorCallback(base::BindRepeating(
-      [](InkDropHostView* host) { return GetToolbarInkDropBaseColor(host); },
+      [](views::View* host) { return GetToolbarInkDropBaseColor(host); },
       this));
 
   SetHasInkDropActionOnClick(true);
