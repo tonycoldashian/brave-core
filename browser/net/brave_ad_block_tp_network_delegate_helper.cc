@@ -34,6 +34,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/host_resolver.h"
 #include "services/network/network_context.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/url_canon.h"
 
@@ -209,7 +210,7 @@ void UseCnameResult(scoped_refptr<base::SequencedTaskRunner> task_runner,
     task_runner->PostTaskAndReplyWithResult(
         FROM_HERE,
         base::BindOnce(&ShouldBlockRequestOnTaskRunner, ctx, previous_result,
-                       base::make_optional<GURL>(canonical_url)),
+                       absl::make_optional<GURL>(canonical_url)),
         base::BindOnce(&OnShouldBlockRequestResult, false, task_runner,
                        next_callback, ctx));
   } else {
