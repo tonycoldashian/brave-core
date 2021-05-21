@@ -71,6 +71,8 @@
 #include "chrome/browser/fullscreen.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #endif
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
