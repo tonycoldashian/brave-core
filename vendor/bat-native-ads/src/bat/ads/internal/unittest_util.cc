@@ -426,7 +426,7 @@ absl::optional<std::string> ReadFileFromTestPathToString(
 
   std::string value;
   if (!base::ReadFileToString(path, &value)) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   ParseAndReplaceTagsForText(&value);
@@ -447,7 +447,7 @@ absl::optional<std::string> ReadFileFromResourcePathToString(
 
   std::string value;
   if (!base::ReadFileToString(path, &value)) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   return value;

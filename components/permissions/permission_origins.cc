@@ -20,7 +20,7 @@ PermissionOrigins::PermissionOrigins(const std::string* requesting_origin,
     : requesting_origin_(GURL(*requesting_origin)),
       embedding_origin_(embedding_origin
                             ? base::make_optional<GURL>(*embedding_origin)
-                            : base::nullopt),
+                            : absl::nullopt),
       content_setting_(static_cast<ContentSetting>(content_setting)) {}
 
 PermissionOrigins::PermissionOrigins(const PermissionOrigins&) = default;

@@ -349,7 +349,7 @@ void BraveProxyingWebSocket::OnHeadersReceivedCompleteFromProxy(
     const absl::optional<GURL>& url) {
   if (on_headers_received_callback_)
     std::move(on_headers_received_callback_)
-        .Run(net::OK, headers, base::nullopt);
+        .Run(net::OK, headers, absl::nullopt);
 
   if (override_headers_) {
     response_.headers = override_headers_;
@@ -378,7 +378,7 @@ void BraveProxyingWebSocket::OnHeadersReceivedComplete(int error_code) {
             weak_factory_.GetWeakPtr()));
   } else {
     OnHeadersReceivedCompleteFromProxy(
-        error_code, absl::optional<std::string>(headers), base::nullopt);
+        error_code, absl::optional<std::string>(headers), absl::nullopt);
   }
 }
 

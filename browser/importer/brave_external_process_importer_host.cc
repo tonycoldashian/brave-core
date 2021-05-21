@@ -28,7 +28,7 @@ namespace {
 absl::optional<base::Value> GetChromeExtensionsList(
     const base::FilePath& secured_preference_path) {
   if (!base::PathExists(secured_preference_path))
-    return base::nullopt;
+    return absl::nullopt;
 
   std::string secured_preference_content;
   base::ReadFileToString(secured_preference_path, &secured_preference_content);
@@ -38,7 +38,7 @@ absl::optional<base::Value> GetChromeExtensionsList(
           kChromeExtensionsListPath)) {
     return extensions->Clone();
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 // Silent installer via websotre w/o any prompt or bubble.

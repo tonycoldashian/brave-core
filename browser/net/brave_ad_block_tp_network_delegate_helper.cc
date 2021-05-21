@@ -109,7 +109,7 @@ class AdblockCnameResolveHostClient : public network::mojom::ResolveHostClient {
     receiver_.set_disconnect_handler(
         base::BindOnce(&AdblockCnameResolveHostClient::OnComplete,
                        base::Unretained(this), net::ERR_NAME_NOT_RESOLVED,
-                       net::ResolveErrorInfo(net::ERR_FAILED), base::nullopt));
+                       net::ResolveErrorInfo(net::ERR_FAILED), absl::nullopt));
   }
 
   void OnComplete(
@@ -123,7 +123,7 @@ class AdblockCnameResolveHostClient : public network::mojom::ResolveHostClient {
       std::move(cb_).Run(
           absl::optional<std::string>(resolved_addresses->GetCanonicalName()));
     } else {
-      std::move(cb_).Run(base::nullopt);
+      std::move(cb_).Run(absl::nullopt);
     }
 
     delete this;
@@ -236,7 +236,7 @@ void OnBeforeURLRequestAdBlockTP(const ResponseCallback& next_callback,
   task_runner->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(&ShouldBlockRequestOnTaskRunner, ctx, EngineFlags(),
-                     base::nullopt),
+                     absl::nullopt),
       base::BindOnce(&OnShouldBlockRequestResult, should_check_uncloaked,
                      task_runner, next_callback, ctx));
 }

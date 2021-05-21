@@ -132,7 +132,7 @@ absl::optional<double> CatalogIssuersInfo::GetEstimatedRedemptionValue(
                                  });
 
   if (iter == issuers.end()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   const CatalogIssuerInfo catalog_issuer = *iter;
@@ -144,7 +144,7 @@ absl::optional<double> CatalogIssuersInfo::GetEstimatedRedemptionValue(
          "Failed to get estimated redemption value due to invalid catalog "
          "issuer name");
 
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   double estimated_redemption_value;
@@ -153,7 +153,7 @@ absl::optional<double> CatalogIssuersInfo::GetEstimatedRedemptionValue(
          "Failed to get estimated redemption value due to invalid catalog "
          "issuer name");
 
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   return estimated_redemption_value;

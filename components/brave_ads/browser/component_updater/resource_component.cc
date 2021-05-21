@@ -78,7 +78,7 @@ absl::optional<base::FilePath> ResourceComponent::GetPath(const std::string& id,
   const std::string index = GetIndex(id, version);
   const auto iter = resources_.find(index);
   if (iter == resources_.end()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   const ResourceInfo resource = iter->second;

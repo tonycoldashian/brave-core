@@ -139,7 +139,7 @@ absl::optional<std::string> AdBlockRegionalServiceManager::GetCspDirectives(
     const GURL& url,
     blink::mojom::ResourceType resource_type,
     const std::string& tab_host) {
-  absl::optional<std::string> csp_directives = base::nullopt;
+  absl::optional<std::string> csp_directives = absl::nullopt;
 
   for (const auto& regional_service : regional_services_) {
     const auto directive =

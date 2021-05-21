@@ -28,7 +28,7 @@ absl::optional<std::string> GetCspDirectivesOnTaskRunner(
     // the request URL as the initiator.
     source_host = ctx->request_url.host();
   } else {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   absl::optional<std::string> csp_directives =
@@ -80,7 +80,7 @@ int OnHeadersReceived_AdBlockCspWork(
         g_brave_browser_process->ad_block_service()->GetTaskRunner();
 
     std::string original_csp_string;
-    absl::optional<std::string> original_csp = base::nullopt;
+    absl::optional<std::string> original_csp = absl::nullopt;
     if ((*override_response_headers)
             ->GetNormalizedHeader("Content-Security-Policy",
                                   &original_csp_string)) {

@@ -761,7 +761,7 @@ absl::optional<SponsoredImagesComponentData> GetSponsoredImagesComponentData(
     if (data.region == region)
       return data;
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 }  // namespace ntp_background_images

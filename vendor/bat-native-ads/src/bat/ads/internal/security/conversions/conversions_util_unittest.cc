@@ -28,7 +28,7 @@ absl::optional<std::string> EnvelopeOpen(
     const VerifiableConversionEnvelopeInfo envelope,
     const std::string& advertiser_secret_key_base64) {
   if (!envelope.IsValid()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   std::vector<uint8_t> advertiser_secret_key =
@@ -67,7 +67,7 @@ TEST(BatAdsSecurityConversionsUtilsTest, EnvelopeSealShortMessage) {
       EnvelopeSeal(verifiable_conversion);
 
   // Assert
-  EXPECT_EQ(base::nullopt, envelope);
+  EXPECT_EQ(absl::nullopt, envelope);
 }
 
 TEST(BatAdsSecurityConversionsUtilsTest, EnvelopeSealLongMessage) {
@@ -87,7 +87,7 @@ TEST(BatAdsSecurityConversionsUtilsTest, EnvelopeSealLongMessage) {
       EnvelopeSeal(verifiable_conversion);
 
   // Assert
-  EXPECT_EQ(base::nullopt, envelope);
+  EXPECT_EQ(absl::nullopt, envelope);
 }
 
 TEST(BatAdsSecurityConversionsUtilsTest, EnvelopeSealInvalidMessage) {
@@ -107,7 +107,7 @@ TEST(BatAdsSecurityConversionsUtilsTest, EnvelopeSealInvalidMessage) {
       EnvelopeSeal(verifiable_conversion);
 
   // Assert
-  EXPECT_EQ(base::nullopt, envelope);
+  EXPECT_EQ(absl::nullopt, envelope);
 }
 
 TEST(BatAdsSecurityConversionsUtilsTest, EnvelopeSealWithInvalidPublicKey) {
@@ -127,7 +127,7 @@ TEST(BatAdsSecurityConversionsUtilsTest, EnvelopeSealWithInvalidPublicKey) {
       EnvelopeSeal(verifiable_conversion);
 
   // Assert
-  EXPECT_EQ(base::nullopt, envelope);
+  EXPECT_EQ(absl::nullopt, envelope);
 }
 
 TEST(BatAdsSecurityConversionsUtilsTest, EnvelopeSeal) {
@@ -146,7 +146,7 @@ TEST(BatAdsSecurityConversionsUtilsTest, EnvelopeSeal) {
   const absl::optional<VerifiableConversionEnvelopeInfo> envelope =
       EnvelopeSeal(verifiable_conversion);
 
-  ASSERT_NE(base::nullopt, envelope);
+  ASSERT_NE(absl::nullopt, envelope);
 
   const absl::optional<std::string> result =
       EnvelopeOpen(envelope.value(), advertiser_secret_key);

@@ -116,7 +116,7 @@ TEST_F(BatAdsTabManagerTest, UpdatedIncognitoTab) {
 
   // Assert
   absl::optional<TabInfo> tab = TabManager::Get()->GetForId(1);
-  EXPECT_EQ(base::nullopt, tab);
+  EXPECT_EQ(absl::nullopt, tab);
 }
 
 TEST_F(BatAdsTabManagerTest, DoNotRecordEventWhenUpdatingIncognitoTab) {
@@ -259,7 +259,7 @@ TEST_F(BatAdsTabManagerTest, ClosedTab) {
 
   // Assert
   absl::optional<TabInfo> tab = TabManager::Get()->GetForId(1);
-  EXPECT_EQ(base::nullopt, tab);
+  EXPECT_EQ(absl::nullopt, tab);
 }
 
 TEST_F(BatAdsTabManagerTest, RecordEventWhenClosingTab) {
@@ -453,7 +453,7 @@ TEST_F(BatAdsTabManagerTest, GetTabWithInvalidId) {
   absl::optional<TabInfo> tab = TabManager::Get()->GetForId(2);
 
   // Assert
-  EXPECT_EQ(base::nullopt, tab);
+  EXPECT_EQ(absl::nullopt, tab);
 }
 
 }  // namespace ads

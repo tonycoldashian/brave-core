@@ -19,7 +19,7 @@ const char kStudyName[] = "AdvertiserSplitTestStudy";
 absl::optional<std::string> GetSplitTestGroup(const std::string study_name) {
   base::FieldTrial* field_trial = base::FieldTrialList::Find(study_name);
   if (!field_trial) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   return field_trial->group_name();

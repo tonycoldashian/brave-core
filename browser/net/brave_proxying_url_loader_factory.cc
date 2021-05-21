@@ -294,7 +294,7 @@ void BraveProxyingURLLoaderFactory::InProgressRequest::
 
   net::RedirectInfo redirect_info =
       CreateRedirectInfo(request_, redirect_url_, kInternalRedirectStatusCode,
-                         base::nullopt /* referrer_policy_header */);
+                         absl::nullopt /* referrer_policy_header */);
 
   network::mojom::URLResponseHeadPtr head =
       network::mojom::URLResponseHead::New();

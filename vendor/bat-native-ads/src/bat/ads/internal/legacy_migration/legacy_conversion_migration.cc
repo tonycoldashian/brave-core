@@ -38,26 +38,26 @@ absl::optional<ConversionQueueItemInfo> GetFromDictionary(
   // Timestamp
   const std::string* timestamp_value = dictionary->FindStringKey(kTimestampKey);
   if (!timestamp_value) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   int64_t timestamp;
   if (!base::StringToInt64(*timestamp_value, &timestamp)) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   // Creative set id
   const std::string* creative_set_id_value =
       dictionary->FindStringKey(kCreativeSetIdKey);
   if (!creative_set_id_value) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   // Creative instance id
   const auto* creative_instance_id_value =
       dictionary->FindStringKey(kCreativeInstanceIdKey);
   if (!creative_instance_id_value) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   ConversionQueueItemInfo conversion_queue_item;
@@ -76,19 +76,19 @@ absl::optional<ConversionQueueItemList> GetFromList(const base::Value* list) {
 
   for (const auto& value : list->GetList()) {
     if (!value.is_dict()) {
-      return base::nullopt;
+      return absl::nullopt;
     }
 
     const base::DictionaryValue* dictionary = nullptr;
     value.GetAsDictionary(&dictionary);
     if (!dictionary) {
-      return base::nullopt;
+      return absl::nullopt;
     }
 
     const absl::optional<ConversionQueueItemInfo> conversion_queue_item =
         GetFromDictionary(dictionary);
     if (!conversion_queue_item) {
-      return base::nullopt;
+      return absl::nullopt;
     }
 
     conversion_queue_items.push_back(conversion_queue_item.value());
@@ -100,17 +100,17 @@ absl::optional<ConversionQueueItemList> GetFromList(const base::Value* list) {
 absl::optional<ConversionQueueItemList> FromJson(const std::string& json) {
   const absl::optional<base::Value> value = base::JSONReader::Read(json);
   if (!value || !value->is_dict()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   const base::DictionaryValue* dictionary = nullptr;
   if (!value->GetAsDictionary(&dictionary)) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   const base::Value* list = dictionary->FindListKey(kListKey);
   if (!list) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   return GetFromList(list);

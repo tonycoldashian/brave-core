@@ -82,7 +82,7 @@ absl::optional<SkColor> MaybeGetDefaultColorForBraveLightUi(int id) {
     case BraveThemeProperties::COLOR_FOR_TEST:
       return BraveThemeProperties::kLightColorForTest;
     default:
-      return base::nullopt;
+      return absl::nullopt;
   }
 }
 
@@ -159,7 +159,7 @@ absl::optional<SkColor> MaybeGetDefaultColorForBraveDarkUi(int id) {
     case BraveThemeProperties::COLOR_FOR_TEST:
       return BraveThemeProperties::kDarkColorForTest;
     default:
-      return base::nullopt;
+      return absl::nullopt;
   }
 }
 
@@ -299,5 +299,5 @@ absl::optional<SkColor> MaybeGetDefaultColorForBraveUi(
     default:
       NOTREACHED();
   }
-  return base::nullopt;
+  return absl::nullopt;
 }

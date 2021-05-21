@@ -14,7 +14,7 @@ index f8bd9bda89a172e04c55c181137aa893fc19d171..9017f9a082946fd6d49fe8a75b35f6b8
 +  }
 +  if (accept_callback_) {
 +    std::move(accept_callback_)
-+        .Run(net::ERR_CONNECTION_CLOSED, mojo::NullRemote(), base::nullopt,
++        .Run(net::ERR_CONNECTION_CLOSED, mojo::NullRemote(), absl::nullopt,
 +            mojo::ScopedDataPipeConsumerHandle(),
 +            mojo::ScopedDataPipeProducerHandle());
 +  }

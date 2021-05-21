@@ -37,7 +37,7 @@ absl::optional<PermissionLifetimeOption> GetTestSecondsOption() {
     test_seconds = base::StringToInt(test_seconds_str, &val) ? val : 0;
   }
   if (!*test_seconds) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   return PermissionLifetimeOption(
       base::UTF8ToUTF16(base::StringPrintf("%d seconds", *test_seconds)),
@@ -66,7 +66,7 @@ std::vector<PermissionLifetimeOption> CreatePermissionLifetimeOptions() {
       base::TimeDelta::FromDays(7)));
   options.emplace_back(PermissionLifetimeOption(
       l10n_util::GetStringUTF16(IDS_PERMISSIONS_BUBBLE_FOREVER_LIFETIME_OPTION),
-      base::nullopt));
+      absl::nullopt));
   DCHECK_LE(options.size(), kOptionsCount);
 
   // This is strictly for manual testing.

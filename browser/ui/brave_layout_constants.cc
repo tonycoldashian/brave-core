@@ -23,5 +23,5 @@ absl::optional<int> GetBraveLayoutConstant(LayoutConstant constant) {
     default:
       break;
   }
-  return base::nullopt;
+  return absl::nullopt;
 }

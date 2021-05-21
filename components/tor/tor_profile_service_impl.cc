@@ -86,7 +86,7 @@ class TorProxyLookupClient : public network::mojom::ProxyLookupClient {
              content::BrowserTaskType::kPreconnect}));
     receiver_.set_disconnect_handler(base::BindOnce(
         &TorProxyLookupClient::OnProxyLookupComplete, base::Unretained(this),
-        net::ERR_ABORTED, base::nullopt));
+        net::ERR_ABORTED, absl::nullopt));
     return pending_remote;
   }
 

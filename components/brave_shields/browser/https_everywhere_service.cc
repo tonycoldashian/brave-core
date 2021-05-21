@@ -264,7 +264,7 @@ std::string HTTPSEverywhereService::ApplyHTTPSRule(
     const std::string& originalUrl,
     const std::string& rule) {
   absl::optional<base::Value> json_object = base::JSONReader::Read(rule);
-  if (base::nullopt == json_object || !json_object->is_list()) {
+  if (absl::nullopt == json_object || !json_object->is_list()) {
     return "";
   }
 

@@ -28,7 +28,7 @@ absl::optional<security::VerifiableConversionEnvelopeInfo> GetEnvelope(
       conversion_queue_item.advertiser_public_key;
 
   if (!verifiable_conversion.IsValid()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   return security::EnvelopeSeal(verifiable_conversion);

@@ -81,7 +81,7 @@ absl::optional<UserActivityEventType> ToUserActivityEventType(
     }
 
     default: {
-      return base::nullopt;
+      return absl::nullopt;
     }
   }
 }

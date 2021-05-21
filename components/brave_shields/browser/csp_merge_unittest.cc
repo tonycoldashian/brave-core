@@ -9,7 +9,7 @@
 
 namespace brave_shields {
 
-const absl::optional<std::string> NO_POLICY = base::nullopt;
+const absl::optional<std::string> NO_POLICY = absl::nullopt;
 
 const auto POLICY1 =
     absl::optional<std::string>("script-src 'self' 'unsafe-inline'");

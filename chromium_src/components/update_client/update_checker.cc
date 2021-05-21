@@ -85,7 +85,7 @@ void SequentialUpdateChecker::UpdateResultAvailable(
         FROM_HERE,
         base::BindOnce(
             std::move(update_check_callback_),
-            error ? base::nullopt
+            error ? absl::nullopt
                   : base::make_optional<ProtocolParser::Results>(results_),
             error_category, error, retry_after_sec));
   else

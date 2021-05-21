@@ -104,7 +104,7 @@ bool IsShieldsContentSettingsTypeName(const std::string& content_type_name) {
 absl::optional<ContentSettingsPattern> ConvertPatternToWildcardSchemeAndPort(
     const ContentSettingsPattern& pattern) {
   if (!CanPatternBeConvertedToWildcardSchemeAndPort(pattern))
-    return base::nullopt;
+    return absl::nullopt;
   DCHECK(!pattern.GetHost().empty());
   absl::optional<ContentSettingsPattern> new_pattern =
       ContentSettingsPattern::FromString("*://" + pattern.GetHost() + "/*");
