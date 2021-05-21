@@ -33,7 +33,7 @@ const size_t kVacMessageMinLength = 1;
 
 }  // namespace
 
-base::Optional<VerifiableConversionEnvelopeInfo> EnvelopeSeal(
+absl::optional<VerifiableConversionEnvelopeInfo> EnvelopeSeal(
     const VerifiableConversionInfo& verifiable_conversion) {
   const std::string message = verifiable_conversion.id;
   const std::string public_key_base64 = verifiable_conversion.public_key;

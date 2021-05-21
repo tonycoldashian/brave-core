@@ -6,12 +6,12 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "brave/components/content_settings/core/browser/brave_content_settings_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 using content_settings::ConvertPatternToWildcardSchemeAndPort;

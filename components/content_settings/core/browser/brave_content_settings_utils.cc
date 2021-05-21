@@ -8,7 +8,6 @@
 #include <algorithm>
 
 #include "base/notreached.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "brave/components/brave_shields/common/brave_shield_constants.h"

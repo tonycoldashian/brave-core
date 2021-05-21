@@ -58,12 +58,12 @@ void UseCnameResult(scoped_refptr<base::SequencedTaskRunner> task_runner,
                     const ResponseCallback& next_callback,
                     std::shared_ptr<BraveRequestInfo> ctx,
                     EngineFlags previous_result,
-                    base::Optional<std::string> cname);
+                    absl::optional<std::string> cname);
 
 class AdblockCnameResolveHostClient : public network::mojom::ResolveHostClient {
  private:
   mojo::Receiver<network::mojom::ResolveHostClient> receiver_{this};
-  base::OnceCallback<void(base::Optional<std::string>)> cb_;
+  base::OnceCallback<void(absl::optional<std::string>)> cb_;
   base::TimeTicks start_time_;
 
  public:
@@ -115,13 +115,13 @@ class AdblockCnameResolveHostClient : public network::mojom::ResolveHostClient {
   void OnComplete(
       int32_t result,
       const net::ResolveErrorInfo& resolve_error_info,
-      const base::Optional<net::AddressList>& resolved_addresses) override {
+      const absl::optional<net::AddressList>& resolved_addresses) override {
     UMA_HISTOGRAM_TIMES("Brave.ShieldsCNAMEBlocking.TotalResolutionTime",
                         base::TimeTicks::Now() - start_time_);
     if (result == net::OK && resolved_addresses) {
       DCHECK(resolved_addresses.has_value() && !resolved_addresses->empty());
       std::move(cb_).Run(
-          base::Optional<std::string>(resolved_addresses->GetCanonicalName()));
+          absl::optional<std::string>(resolved_addresses->GetCanonicalName()));
     } else {
       std::move(cb_).Run(base::nullopt);
     }
@@ -146,7 +146,7 @@ class AdblockCnameResolveHostClient : public network::mojom::ResolveHostClient {
 EngineFlags ShouldBlockRequestOnTaskRunner(
     std::shared_ptr<BraveRequestInfo> ctx,
     EngineFlags previous_result,
-    base::Optional<GURL> canonical_url) {
+    absl::optional<GURL> canonical_url) {
   if (!ctx->initiator_url.is_valid()) {
     return previous_result;
   }
@@ -196,7 +196,7 @@ void UseCnameResult(scoped_refptr<base::SequencedTaskRunner> task_runner,
                     const ResponseCallback& next_callback,
                     std::shared_ptr<BraveRequestInfo> ctx,
                     EngineFlags previous_result,
-                    base::Optional<std::string> cname) {
+                    absl::optional<std::string> cname) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (cname.has_value() && ctx->request_url.host() != *cname &&

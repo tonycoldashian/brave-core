@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/json/json_reader.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "bat/ads/internal/ads_client_helper.h"
@@ -18,6 +17,7 @@
 #include "bat/ads/internal/logging.h"
 #include "bat/ads/pref_names.h"
 #include "bat/ads/result.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ads {
 namespace conversions {
@@ -31,7 +31,7 @@ const char kTimestampKey[] = "timestamp_in_seconds";
 const char kCreativeSetIdKey[] = "creative_set_id";
 const char kCreativeInstanceIdKey[] = "uuid";
 
-base::Optional<ConversionQueueItemInfo> GetFromDictionary(
+absl::optional<ConversionQueueItemInfo> GetFromDictionary(
     const base::DictionaryValue* dictionary) {
   DCHECK(dictionary);
 
@@ -68,7 +68,7 @@ base::Optional<ConversionQueueItemInfo> GetFromDictionary(
   return conversion_queue_item;
 }
 
-base::Optional<ConversionQueueItemList> GetFromList(const base::Value* list) {
+absl::optional<ConversionQueueItemList> GetFromList(const base::Value* list) {
   DCHECK(list);
   DCHECK(list->is_list());
 
@@ -85,7 +85,7 @@ base::Optional<ConversionQueueItemList> GetFromList(const base::Value* list) {
       return base::nullopt;
     }
 
-    const base::Optional<ConversionQueueItemInfo> conversion_queue_item =
+    const absl::optional<ConversionQueueItemInfo> conversion_queue_item =
         GetFromDictionary(dictionary);
     if (!conversion_queue_item) {
       return base::nullopt;
@@ -97,8 +97,8 @@ base::Optional<ConversionQueueItemList> GetFromList(const base::Value* list) {
   return conversion_queue_items;
 }
 
-base::Optional<ConversionQueueItemList> FromJson(const std::string& json) {
-  const base::Optional<base::Value> value = base::JSONReader::Read(json);
+absl::optional<ConversionQueueItemList> FromJson(const std::string& json) {
+  const absl::optional<base::Value> value = base::JSONReader::Read(json);
   if (!value || !value->is_dict()) {
     return base::nullopt;
   }
@@ -140,7 +140,7 @@ void Migrate(InitializeCallback callback) {
           return;
         }
 
-        const base::Optional<ConversionQueueItemList> conversion_queue_items =
+        const absl::optional<ConversionQueueItemList> conversion_queue_items =
             FromJson(json);
 
         if (!conversion_queue_items) {

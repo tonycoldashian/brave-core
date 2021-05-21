@@ -93,7 +93,7 @@ class TorProxyLookupClient : public network::mojom::ProxyLookupClient {
   // network::mojom::ProxyLookupClient:
   void OnProxyLookupComplete(
       int32_t net_error,
-      const base::Optional<net::ProxyInfo>& proxy_info) override {
+      const absl::optional<net::ProxyInfo>& proxy_info) override {
     std::move(callback_).Run(proxy_info);
     delete this;
   }
@@ -105,7 +105,7 @@ class TorProxyLookupClient : public network::mojom::ProxyLookupClient {
 };
 
 void OnNewTorCircuit(std::unique_ptr<NewTorCircuitTracker> tracker,
-                     const base::Optional<net::ProxyInfo>& proxy_info) {
+                     const absl::optional<net::ProxyInfo>& proxy_info) {
   tracker->NewIdentityLoaded(proxy_info.has_value() &&
                              !proxy_info->is_direct());
 }

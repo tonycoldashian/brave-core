@@ -9,7 +9,7 @@
 #include "ui/base/pointer/touch_ui_controller.h"
 
 // Returns a |nullopt| if the UI color is not handled by Brave.
-base::Optional<int> GetBraveLayoutConstant(LayoutConstant constant) {
+absl::optional<int> GetBraveLayoutConstant(LayoutConstant constant) {
   const bool touch = ui::TouchUiController::Get()->touch_ui();
   // const bool hybrid = mode == ui::MaterialDesignController::MATERIAL_HYBRID;
   // const bool touch_optimized_material =
