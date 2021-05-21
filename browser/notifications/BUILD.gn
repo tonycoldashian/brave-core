@@ -12,7 +12,10 @@ source_set("notifications") {
     "ads_notification_handler.h",
   ]
 
-  deps = [ "//chrome/browser/notifications" ]
+  deps = [
+    "//chrome/browser/notifications",
+    "//third_party/abseil-cpp:absl",
+  ]
 
   if (is_mac) {
     sources += [
