@@ -35,7 +35,7 @@ bool AllowFingerprintingForHost(blink::CanvasRenderingContextHost* host) {
 
 #define BRAVE_WEBGL_RENDERING_CONTEXT_BASE_NULLOPT \
   if (!AllowFingerprintingForHost(Host()))         \
-    return base::nullopt;
+    return absl::nullopt;
 
 #define BRAVE_WEBGL_RENDERING_CONTEXT_BASE_ZERO \
   if (!AllowFingerprintingForHost(Host()))      \
