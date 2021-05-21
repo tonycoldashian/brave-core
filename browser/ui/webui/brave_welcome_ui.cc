@@ -25,6 +25,7 @@
 #include "components/grit/brave_components_resources.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 using content::WebUIMessageHandler;
