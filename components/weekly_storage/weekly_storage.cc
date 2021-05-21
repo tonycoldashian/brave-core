@@ -122,7 +122,7 @@ void WeeklyStorage::Load() {
   if (!list) {
     return;
   }
-  for (auto it = list->begin(); it != list->end(); ++it) {
+  for (auto it = list->GetList().begin(); it != list->GetList().end(); ++it) {
     const base::Value* day = it->FindKey("day");
     const base::Value* value = it->FindKey("value");
     if (!day || !value || !day->is_double() || !value->is_double()) {
