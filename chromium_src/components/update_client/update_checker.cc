@@ -65,7 +65,7 @@ void SequentialUpdateChecker::CheckNext() {
 }
 
 void SequentialUpdateChecker::UpdateResultAvailable(
-    const base::Optional<ProtocolParser::Results>& results,
+    const absl::optional<ProtocolParser::Results>& results,
     ErrorCategory error_category,
     int error,
     int retry_after_sec) {

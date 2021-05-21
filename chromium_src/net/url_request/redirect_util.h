@@ -11,8 +11,8 @@
         const GURL& original_url,                                        \
         const std::string& original_method,                              \
         const RedirectInfo& redirect_info,                               \
-        const base::Optional<std::vector<std::string>>& removed_headers, \
-        const base::Optional<net::HttpRequestHeaders>& modified_headers, \
+        const absl::optional<std::vector<std::string>>& removed_headers, \
+        const absl::optional<net::HttpRequestHeaders>& modified_headers, \
         HttpRequestHeaders* request_headers,                             \
         bool* should_clear_upload);                                      \
     NET_EXPORT static void UpdateHttpRequest

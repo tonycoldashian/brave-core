@@ -10,7 +10,7 @@
 
 int GetLayoutConstant(LayoutConstant constant) {
   // get brave overriden value
-  const base::Optional<int> braveOption = GetBraveLayoutConstant(constant);
+  const absl::optional<int> braveOption = GetBraveLayoutConstant(constant);
   if (braveOption) {
     return braveOption.value();
   }

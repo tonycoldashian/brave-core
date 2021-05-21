@@ -19,9 +19,9 @@ class BraveActionIconWithBadgeImageSource : public IconWithBadgeImageSource {
   public:
     using IconWithBadgeImageSource::IconWithBadgeImageSource;
   private:
-    base::Optional<int> GetCustomGraphicSize() override;
-    base::Optional<int> GetCustomGraphicXOffset() override;
-    base::Optional<int> GetCustomGraphicYOffset() override;
+    absl::optional<int> GetCustomGraphicSize() override;
+    absl::optional<int> GetCustomGraphicXOffset() override;
+    absl::optional<int> GetCustomGraphicYOffset() override;
     void PaintBadge(gfx::Canvas* canvas) override;
     gfx::Rect GetIconAreaRect() const override;
     DISALLOW_COPY_AND_ASSIGN(BraveActionIconWithBadgeImageSource);

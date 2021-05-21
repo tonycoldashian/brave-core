@@ -34,7 +34,7 @@ bool IPFSJSONParser::GetPeersFromJSON(const std::string& json,
   base::JSONReader::ValueWithError value_with_error =
       base::JSONReader::ReadAndReturnValueWithError(
           json, base::JSONParserOptions::JSON_PARSE_RFC);
-  base::Optional<base::Value>& records_v = value_with_error.value;
+  absl::optional<base::Value>& records_v = value_with_error.value;
 
   if (!records_v) {
     VLOG(1) << "Invalid response, could not parse JSON, JSON is: " << json;
@@ -84,7 +84,7 @@ bool IPFSJSONParser::GetAddressesConfigFromJSON(const std::string& json,
   base::JSONReader::ValueWithError value_with_error =
       base::JSONReader::ReadAndReturnValueWithError(
           json, base::JSONParserOptions::JSON_PARSE_RFC);
-  base::Optional<base::Value>& records_v = value_with_error.value;
+  absl::optional<base::Value>& records_v = value_with_error.value;
 
   if (!records_v) {
     VLOG(1) << "Invalid response, could not parse JSON, JSON is: " << json;
@@ -136,7 +136,7 @@ bool IPFSJSONParser::GetRepoStatsFromJSON(const std::string& json,
   base::JSONReader::ValueWithError value_with_error =
       base::JSONReader::ReadAndReturnValueWithError(
           json, base::JSONParserOptions::JSON_PARSE_RFC);
-  base::Optional<base::Value>& records_v = value_with_error.value;
+  absl::optional<base::Value>& records_v = value_with_error.value;
 
   if (!records_v) {
     VLOG(1) << "Invalid response, could not parse JSON, JSON is: " << json;
@@ -184,7 +184,7 @@ bool IPFSJSONParser::GetNodeInfoFromJSON(const std::string& json,
   base::JSONReader::ValueWithError value_with_error =
       base::JSONReader::ReadAndReturnValueWithError(
           json, base::JSONParserOptions::JSON_PARSE_RFC);
-  base::Optional<base::Value>& records_v = value_with_error.value;
+  absl::optional<base::Value>& records_v = value_with_error.value;
 
   if (!records_v) {
     VLOG(1) << "Invalid response, could not parse JSON, JSON is: " << json;
@@ -222,7 +222,7 @@ bool IPFSJSONParser::GetGarbageCollectionFromJSON(const std::string& json,
   base::JSONReader::ValueWithError value_with_error =
       base::JSONReader::ReadAndReturnValueWithError(
           json, base::JSONParserOptions::JSON_PARSE_RFC);
-  base::Optional<base::Value>& records_v = value_with_error.value;
+  absl::optional<base::Value>& records_v = value_with_error.value;
   if (!records_v) {
     VLOG(1) << "Invalid response, could not parse JSON, JSON is: " << json
             << " error is:" << value_with_error.error_message;
@@ -252,7 +252,7 @@ bool IPFSJSONParser::GetImportResponseFromJSON(const std::string& json,
   base::JSONReader::ValueWithError value_with_error =
       base::JSONReader::ReadAndReturnValueWithError(
           json, base::JSONParserOptions::JSON_PARSE_RFC);
-  base::Optional<base::Value>& records_v = value_with_error.value;
+  absl::optional<base::Value>& records_v = value_with_error.value;
   if (!records_v) {
     VLOG(1) << "Invalid response, could not parse JSON, JSON is: " << json
             << " error is:" << value_with_error.error_message;
@@ -290,7 +290,7 @@ bool IPFSJSONParser::GetParseKeysFromJSON(
   base::JSONReader::ValueWithError value_with_error =
       base::JSONReader::ReadAndReturnValueWithError(
           json, base::JSONParserOptions::JSON_PARSE_RFC);
-  base::Optional<base::Value>& records_v = value_with_error.value;
+  absl::optional<base::Value>& records_v = value_with_error.value;
   if (!records_v) {
     VLOG(1) << "Invalid response, could not parse JSON, JSON is: " << json
             << " error is:" << value_with_error.error_message;
@@ -327,7 +327,7 @@ bool IPFSJSONParser::GetParseSingleKeyFromJSON(const std::string& json,
   base::JSONReader::ValueWithError value_with_error =
       base::JSONReader::ReadAndReturnValueWithError(
           json, base::JSONParserOptions::JSON_PARSE_RFC);
-  base::Optional<base::Value>& records_v = value_with_error.value;
+  absl::optional<base::Value>& records_v = value_with_error.value;
   if (!records_v) {
     VLOG(1) << "Invalid response, could not parse JSON, JSON is: " << json
             << " error is:" << value_with_error.error_message;

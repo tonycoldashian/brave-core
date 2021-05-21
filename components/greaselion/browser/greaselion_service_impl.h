@@ -70,7 +70,7 @@ class GreaselionServiceImpl : public GreaselionService {
   void SetBrowserVersionForTesting(const base::Version& version) override;
   void CreateAndInstallExtensions();
   void PostConvert(
-      base::Optional<GreaselionConvertedExtension> converted_extension);
+      absl::optional<GreaselionConvertedExtension> converted_extension);
   void Install(scoped_refptr<extensions::Extension> extension);
   void MaybeNotifyObservers();
 

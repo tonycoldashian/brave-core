@@ -11,9 +11,9 @@ class BraveActionIconWithBadgeImageSource;
 #define BRAVE_ICON_WITH_BADGE_IMAGE_SOURCE_H_            \
  private:                                                \
   friend class BraveActionIconWithBadgeImageSource;      \
-  virtual base::Optional<int> GetCustomGraphicSize();    \
-  virtual base::Optional<int> GetCustomGraphicXOffset(); \
-  virtual base::Optional<int> GetCustomGraphicYOffset(); \
+  virtual absl::optional<int> GetCustomGraphicSize();    \
+  virtual absl::optional<int> GetCustomGraphicXOffset(); \
+  virtual absl::optional<int> GetCustomGraphicYOffset(); \
                                                          \
  public:                                                 \
 // #define BRAVE_ICON_WITH_BADGE_IMAGE_SOURCE_H_
