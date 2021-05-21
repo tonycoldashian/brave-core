@@ -1985,7 +1985,7 @@ void AdsServiceImpl::RecordP2AEvent(const std::string& name,
         break;
       }
 
-      for (auto& item : *list) {
+      for (auto& item : list->GetList()) {
         RecordInWeeklyStorageAndEmitP2AHistogramAnswer(profile_->GetPrefs(),
                                                        item.GetString());
       }
