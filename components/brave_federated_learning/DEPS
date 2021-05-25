@@ -1,0 +1,14 @@
+include_rules = [
+  "+bat/ads",
+  "+brave/components/version_info",
+  "+content/public/browser",
+  "+services/network/public",
+  "+third_party/metrics_proto",
+]
+
+# Existing exceptions
+specific_include_rules = {
+  "brave_federated_learning_service.cc": [
+    "+chrome/browser/profiles/profile_manager.h",
+  ],
+}

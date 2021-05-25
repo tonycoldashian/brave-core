@@ -1,0 +1,27 @@
+source_set("brave_federated_learning") {
+  check_includes = false
+  sources = [
+    "brave_federated_learning_service.cc",
+    "brave_federated_learning_service.h",
+    "brave_operational_profiling.cc",
+    "brave_operational_profiling.h",
+    "brave_operational_profiling_features.cc",
+    "brave_operational_profiling_features.h",
+  ]
+
+  deps = [
+    "//base",
+    "//brave/components/brave_stats/browser",
+    "//brave/components/p3a:p3a",
+    "//brave/components/version_info",
+    "//brave/vendor/bat-native-ads",
+    "//chrome/common",
+    "//components/metrics",
+    "//components/prefs",
+    "//content/public/browser",
+    "//content/public/common",
+    "//services/network/public/cpp",
+    "//services/network/public/mojom",
+    "//url",
+  ]
+}
