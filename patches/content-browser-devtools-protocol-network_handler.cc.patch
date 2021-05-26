@@ -1,0 +1,41 @@
+diff --git a/content/browser/devtools/protocol/network_handler.cc b/content/browser/devtools/protocol/network_handler.cc
+index 33907f5922a626913dc11d0372fba32d10cb10a1..707df85a130f13ca1ebff745125809308fb28d35 100644
+--- a/content/browser/devtools/protocol/network_handler.cc
++++ b/content/browser/devtools/protocol/network_handler.cc
+@@ -199,10 +199,12 @@ class CookieRetrieverNetworkService
+  public:
+   static void Retrieve(network::mojom::CookieManager* cookie_manager,
+                        const std::vector<GURL> urls,
++                       BRAVE_COOKIE_RETRIEVER_NETWORK_SERVICE_RETRIEVE_ARGS
+                        std::unique_ptr<GetCookiesCallback> callback) {
+     scoped_refptr<CookieRetrieverNetworkService> self =
+         new CookieRetrieverNetworkService(std::move(callback));
+     net::CookieOptions cookie_options = net::CookieOptions::MakeAllInclusive();
++    BRAVE_COOKIE_RETRIEVER_NETWORK_SERVICE_RETRIEVE_BODY
+     for (const auto& url : urls) {
+       cookie_manager->GetCookieList(
+           url, cookie_options,
+@@ -1309,7 +1311,6 @@ void NetworkHandler::ClearBrowserCookies(
+     callback->sendFailure(Response::InternalError());
+     return;
+   }
+-
+   storage_partition_->GetCookieManagerForBrowserProcess()->DeleteCookies(
+       network::mojom::CookieDeletionFilter::New(),
+       base::BindOnce([](std::unique_ptr<ClearBrowserCookiesCallback> callback,
+@@ -1327,6 +1328,7 @@ void NetworkHandler::GetCookies(Maybe<Array<String>> protocol_urls,
+ 
+   CookieRetrieverNetworkService::Retrieve(
+       storage_partition_->GetCookieManagerForBrowserProcess(), urls,
++      BRAVE_NETWORK_HANDLER_GET_COOKIES_RETREIVE_CALL_ARGS
+       std::move(callback));
+ }
+ 
+@@ -1383,6 +1385,7 @@ void NetworkHandler::SetCookie(const std::string& name,
+   options.set_same_site_cookie_context(
+       net::CookieOptions::SameSiteCookieContext::MakeInclusive());
+   options.set_include_httponly();
++  BRAVE_NETWORK_HANDLER_SET_COOKIES_SET_COOKIE_OPTIONS
+   storage_partition_->GetCookieManagerForBrowserProcess()->SetCanonicalCookie(
+       *cookie, net::cookie_util::SimulatedCookieSource(*cookie, "https"),
+       options,
