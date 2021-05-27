@@ -665,11 +665,12 @@ void AdsServiceImpl::Initialize() {
   profile_pref_change_registrar_.Add(
       ntp_background_images::prefs::
           kNewTabPageShowSponsoredImagesBackgroundImage,
-      base::Bind(&AdsServiceImpl::OnPrefsChanged, base::Unretained(this)));
+      base::BindRepeating(&AdsServiceImpl::OnPrefsChanged,
+                          base::Unretained(this)));
 
   profile_pref_change_registrar_.Add(
-      kNewTabPageShowToday,
-      base::Bind(&AdsServiceImpl::OnPrefsChanged, base::Unretained(this)));
+      kNewTabPageShowToday, base::BindRepeating(&AdsServiceImpl::OnPrefsChanged,
+                                                base::Unretained(this)));
 
   MaybeStart(false);
 }
