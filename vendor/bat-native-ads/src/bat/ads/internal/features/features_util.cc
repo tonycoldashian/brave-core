@@ -5,6 +5,7 @@
 
 #include "bat/ads/internal/features/features_util.h"
 
+#include "base/time/time_delta_from_string.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ads {
@@ -35,7 +36,7 @@ base::TimeDelta GetFieldTrialParamByFeatureAsTimeDelta(
   }
 
   absl::optional<base::TimeDelta> time_delta =
-      base::TimeDelta::FromString(value_as_string);
+      base::TimeDeltaFromString(value_as_string);
   if (!time_delta.has_value()) {
     return default_value;
   }
