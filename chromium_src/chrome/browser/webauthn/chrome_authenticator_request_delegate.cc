@@ -12,8 +12,9 @@
   const std::vector<std::string>& kBraveKeyChainAccessParts = { \
       "KL8N8XSYF4", base::mac::BaseBundleID(), "webauthn"};     \
   return TouchIdAuthenticatorConfig{                            \
-      base::JoinString(kBraveKeyChainAccessParts, "."),         \
-      std::move(metadata_secret)};
+      .keychain_access_group =                                  \
+          base::JoinString(kBraveKeyChainAccessParts, "."),     \
+      .metadata_secret = std::move(metadata_secret)};
 #else
 #define BRAVE_WEBAUTHN_KEYCHAIN_ACCESS_GROUP void(0)
 #endif
