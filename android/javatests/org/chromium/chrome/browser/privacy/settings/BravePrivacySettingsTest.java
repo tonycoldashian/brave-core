@@ -42,10 +42,8 @@ public class BravePrivacySettingsTest {
     private static final String PREF_CLEAR_BROWSING_DATA = "clear_browsing_data";
     private static final String PREF_PRIVACY_SANDBOX = "privacy_sandbox";
 
-    // TODO(samartnik): decrement NUMBER_OF_ITEMS once privacy_sandbox is removed in
-    // https://github.com/brave/brave-browser/issues/15871
     // Ignore "usage_stats_reporting" and "privacy_sandbox"
-    private static int NUMBER_OF_ITEMS = 8;
+    private static int NUMBER_OF_ITEMS = 7;
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
@@ -86,9 +84,7 @@ public class BravePrivacySettingsTest {
     @SmallTest
     public void testPrivacySandboxDefauktIsFalseAndNull() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // TODO(samartnik): uncomment code bellow once privacy_sandbox is removed in
-            // https://github.com/brave/brave-browser/issues/15871
-            // assertFalse(PrivacySandboxBridge.isPrivacySandboxSettingsFunctional());
+            assertFalse(PrivacySandboxBridge.isPrivacySandboxSettingsFunctional());
             if (!PrivacySandboxBridge.isPrivacySandboxSettingsFunctional()) {
                 assertEquals(null, mFragment.findPreference(PREF_PRIVACY_SANDBOX));
             }
