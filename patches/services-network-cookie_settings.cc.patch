@@ -1,0 +1,12 @@
+diff --git a/services/network/cookie_settings.cc b/services/network/cookie_settings.cc
+index 7c9ed839981cbb8b3ddd56a43226d5af649a018e..1a6fca76648cbc62996e2219ad94a6ac039e83fb 100644
+--- a/services/network/cookie_settings.cc
++++ b/services/network/cookie_settings.cc
+@@ -125,6 +125,7 @@ ContentSetting CookieSettings::GetCookieSettingInternal(
+     if (entry.primary_pattern.Matches(url) &&
+         entry.secondary_pattern.Matches(first_party_url)) {
+       cookie_setting = entry.GetContentSetting();
++      BRAVE_COOKIE_SETTINGS_GET_COOKIE_SETTINGS_INTERNAL
+       // Only continue to block third party cookies if there is not an explicit
+       // exception.
+       if (!IsDefaultSetting(entry))
