@@ -157,6 +157,8 @@ public abstract class BraveActivity<C extends ChromeActivityComponent>
     private static final List<String> yandexRegions =
             Arrays.asList("AM", "AZ", "BY", "KG", "KZ", "MD", "RU", "TJ", "TM", "UZ");
 
+    public static boolean isBraveVpnEnabled = false;
+
     public final class DialogOption {
         public static final int CLEAR_HISTORY = 0;
         public static final int CLEAR_COOKIES_AND_SITE_DATA = 1;
@@ -201,6 +203,8 @@ public abstract class BraveActivity<C extends ChromeActivityComponent>
             handleBraveSetDefaultBrowserDialog();
         } else if (id == R.id.brave_rewards_id) {
             openNewOrSelectExistingTab(REWARDS_SETTINGS_URL);
+        } else if (id == R.id.request_brave_vpn_id || id == R.id.request_brave_vpn_check_id) {
+            isBraveVpnEnabled = !isBraveVpnEnabled;
         } else {
             return false;
         }
@@ -434,6 +438,7 @@ public abstract class BraveActivity<C extends ChromeActivityComponent>
                                 == 7
                         && PackageUtils.isFirstInstall(this))) {
             showVpnCalloutDialog();
+        }
     }
 
     private void checkSetDefaultBrowserModal() {
