@@ -10,7 +10,7 @@ brave_core_public_headers = [
   "//brave/ios/browser/api/bookmarks/importer/brave_bookmarks_importer.h",
   "//brave/ios/browser/api/bookmarks/exporter/brave_bookmarks_exporter.h",
   "//brave/ios/browser/api/sync/brave_sync_api.h",
-  "//brave/ios/browser/api/wallet/keyring_controller.h",
-  "//brave/ios/browser/api/wallet/hd_keyring.h",
-  "//brave/ios/browser/api/wallet/eth_json_rpc_controller.h",
+  "//brave/ios/browser/api/wallet/brave_wallet_api.h",
+  "//brave/ios/browser/api/wallet/keyring_controller_ios.h",
+  "//brave/ios/browser/api/wallet/hd_keyring_ios.h",
 ]

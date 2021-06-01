@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+@class BraveWalletAPI;
+
 NS_ASSUME_NONNULL_BEGIN
 
 OBJC_EXPORT
@@ -20,6 +22,8 @@ OBJC_EXPORT
 - (void)scheduleLowPriorityStartupTasks;
 
 - (void)setUserAgent:(NSString*)userAgent;
+
+@property(nullable, nonatomic, readonly) BraveWalletAPI* wallet;
 
 @end
 

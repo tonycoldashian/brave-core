@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/strings/sys_string_conversions.h"
+#include "brave/components/brave_wallet/common/buildflags/buildflags.h"
 #include "brave/ios/app/brave_main_delegate.h"
 #import "brave/ios/browser/brave_web_client.h"
 #include "ios/chrome/app/startup/provider_registration.h"
@@ -19,12 +20,18 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/web/public/init/web_main.h"
 
+#if BUILDFLAG(BRAVE_WALLET_ENABLED)
+#import "brave/ios/browser/api/wallet/brave_wallet_api+private.h"
+#import "brave/ios/browser/api/wallet/brave_wallet_service_factory.h"
+#endif
+
 @interface BraveCoreMain () {
   std::unique_ptr<BraveWebClient> _webClient;
   std::unique_ptr<BraveMainDelegate> _delegate;
   std::unique_ptr<web::WebMain> _webMain;
   ChromeBrowserState* _mainBrowserState;
 }
+@property(nullable, nonatomic, readwrite) BraveWalletAPI* wallet;
 @end
 
 @implementation BraveCoreMain
@@ -104,6 +111,19 @@
 
 - (void)setUserAgent:(NSString*)userAgent {
   _webClient->SetUserAgent(base::SysNSStringToUTF8(userAgent));
+}
+
+- (nullable BraveWalletAPI*)wallet {
+#if BUILDFLAG(BRAVE_WALLET_ENABLED)
+  if (!_wallet) {
+    auto* service =
+        BraveWalletServiceFactory::GetForBrowserState(_mainBrowserState);
+    _wallet = [[BraveWalletAPI alloc] initWithWalletService:service];
+  }
+  return _wallet;
+#else
+  return nil;
+#endif
 }
 
 @end
