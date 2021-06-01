@@ -14,7 +14,7 @@ class BraveBrowserMainPartsMac : public ChromeBrowserMainPartsMac {
 
  private:
   // ChromeBrowserMainPartsMac overrides:
-  void PreCreateMainMessageLoop() override;
+  void PreMainMessageLoopStart() override;
 };
 
 #endif  // BRAVE_BROWSER_BRAVE_BROWSER_MAIN_PARTS_MAC_H_

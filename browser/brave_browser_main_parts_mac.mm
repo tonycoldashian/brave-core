@@ -10,8 +10,8 @@
 #import "brave/browser/mac/sparkle_glue.h"
 #endif
 
-void BraveBrowserMainPartsMac::PreCreateMainMessageLoop() {
-  ChromeBrowserMainPartsMac::PreCreateMainMessageLoop();
+void BraveBrowserMainPartsMac::PreMainMessageLoopStart() {
+  ChromeBrowserMainPartsMac::PreMainMessageLoopStart();
 
 #if BUILDFLAG(ENABLE_SPARKLE)
   // It would be no-op if udpate is disabled.
