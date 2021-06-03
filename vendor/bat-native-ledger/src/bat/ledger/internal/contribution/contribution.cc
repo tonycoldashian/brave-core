@@ -26,6 +26,10 @@ using std::placeholders::_2;
 using std::placeholders::_3;
 
 namespace {
+
+constexpr int kMaxRetries = 3;
+constexpr int kMaxRedeemRetries = 100;
+
 ledger::type::ContributionStep ConvertResultIntoContributionStep(
     const ledger::type::Result result) {
   switch (result) {
@@ -672,9 +676,14 @@ void Contribution::SetRetryCounter(type::ContributionInfoPtr contribution) {
     return;
   }
 
-  if (contribution->retry_count == 3 &&
-      contribution->step != type::ContributionStep::STEP_PREPARE) {
-    BLOG(0, "Contribution failed after 3 retries");
+  bool should_retry =
+      contribution->retry_count < kMaxRetries ||
+      (contribution->step == type::ContributionStep::STEP_PREPARE &&
+       contribution->retry_count < kMaxRedeemRetries);
+
+  if (!should_retry) {
+    BLOG(0, "Contribution failed after " << contribution->retry_count
+                                         << " retries");
     ContributionCompleted(type::Result::TOO_MANY_RESULTS,
                           std::move(contribution));
     return;
