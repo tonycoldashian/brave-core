@@ -7,7 +7,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import argparse
+import argparse, os
 import json
 import os
 import subprocess
@@ -17,14 +17,14 @@ from rust_deps_config import RUST_DEPS_PACKAGE_VERSION
 
 # Use all (sub)paths except these for npm audit.
 NPM_EXCLUDE_PATHS = [
-    'build',
+     'build',
     os.path.join('node_modules'),
     os.path.join('vendor', 'brave-extension', 'node_modules'),
 ]
 
 # Use only these (sub)paths for cargo audit.
 CARGO_INCLUDE_PATHS = [
-    os.path.join('build', 'rust'),
+  os.path.join('build', 'rust'),
 ]
 
 # Ping security team before adding to ignored_npm_advisories
