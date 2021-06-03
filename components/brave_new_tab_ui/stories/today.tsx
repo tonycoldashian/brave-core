@@ -10,6 +10,7 @@ import ThemeProvider from '../../common/StorybookThemeProvider'
 import BraveTodayLoadingCard from '../components/default/braveToday/cards/cardLoading'
 import BraveTodayErrorCard from '../components/default/braveToday/cards/cardError'
 import PublisherMeta from '../components/default/braveToday/cards/PublisherMeta'
+import DisplayAdCard from '../components/default/braveToday/cards/cardDisplayAd'
 
 const onClick = (() => alert('clicked'))
 
@@ -72,4 +73,19 @@ export const Loading = () => (
 
 export const Error = () => (
   <BraveTodayErrorCard />
+)
+
+export const DisplayAd = () => (
+  <DisplayAdCard
+    content={{
+      id: 'sample',
+      title: '10 reasons why technica recreated the sound of old classics.',
+      imageUrl: 'https://placekitten.com/300/250',
+      destinationUrl: 'https://brave.com',
+      advertiserName: 'Brave',
+      ctaText: 'Join us'
+    }}
+    onVisitDisplayAd={() => alert("handle visit")}
+    onDisplayAdViewed={() => console.log('display ad viewed')}
+  />
 )

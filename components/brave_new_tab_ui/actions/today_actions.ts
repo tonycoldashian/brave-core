@@ -43,6 +43,17 @@ export const feedItemViewedCountChanged = createAction<number>('feedItemViewedCo
 
 export const promotedItemViewed = createAction<BraveToday.PromotedArticle>('promotedItemViewed')
 
+export type VisitDisplayAdPayload = {
+  id: string,
+  openInNewTab?: boolean
+}
+export const visitDisplayAd = createAction<VisitDisplayAdPayload>('visitDisplayAd')
+
+export type DisplayAdViewedPayload = {
+  id: string
+}
+export const displayAdViewed = createAction<DisplayAdViewedPayload>('displayAdViewed')
+
 export type SetPublisherPrefPayload = {
   publisherId: string
   enabled: boolean | null

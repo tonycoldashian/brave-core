@@ -1216,6 +1216,8 @@ class NewTabPage extends React.Component<Props, State> {
           onSetPublisherPref={this.props.actions.today.setPublisherPref}
           onCheckForUpdate={this.props.actions.today.checkForUpdate}
           onOptIn={this.props.actions.today.optIn}
+          onViewedDisplayAd={this.props.actions.today.displayAdViewed}
+          onVisitDisplayAd={this.props.actions.today.visitDisplayAd}
         />
         }
         <Settings

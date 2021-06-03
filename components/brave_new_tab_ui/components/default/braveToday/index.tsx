@@ -7,12 +7,14 @@ import * as React from 'react'
 import * as BraveTodayElement from './default'
 import CardOptIn from './cards/cardOptIn'
 import CardLoading from './cards/cardLoading'
-import { ReadFeedItemPayload } from '../../../actions/today_actions'
+import { ReadFeedItemPayload, DisplayAdViewedPayload, VisitDisplayAdPayload } from '../../../actions/today_actions'
 const Content = React.lazy(() => import('./content'))
 
 export type OnReadFeedItem = (args: ReadFeedItemPayload) => any
 export type OnSetPublisherPref = (publisherId: string, enabled: boolean) => any
 export type OnPromotedItemViewed = (item: BraveToday.FeedItem) => any
+export type OnVisitDisplayAd = (args: VisitDisplayAdPayload) => any
+export type OnViewedDisplayAd = (args: DisplayAdViewedPayload) => any
 
 export type Props = {
   isFetching: boolean
@@ -26,6 +28,8 @@ export type Props = {
   onInteracting: () => any
   onReadFeedItem: OnReadFeedItem
   onPromotedItemViewed: OnPromotedItemViewed
+  onVisitDisplayAd: OnVisitDisplayAd,
+  onViewedDisplayAd: OnViewedDisplayAd,
   onFeedItemViewedCountChanged: (feedItemsViewed: number) => any
   onSetPublisherPref: OnSetPublisherPref
   onAnotherPageNeeded: () => any
