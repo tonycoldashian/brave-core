@@ -10,6 +10,8 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/process/launch.h"
+#include "base/process/process.h"
 #include "base/rand_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
@@ -114,12 +116,15 @@ IpfsService::IpfsService(content::BrowserContext* context,
 }
 
 IpfsService::~IpfsService() {
+  if (ipfs_client_updater_) {
+    ipfs_client_updater_->RemoveObserver(this);
+  }
   RemoveObserver(ipns_keys_manager_.get());
   Shutdown();
 }
 
 // static
-void IpfsService::RegisterPrefs(PrefRegistrySimple* registry) {
+void IpfsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kIPFSEnabled, true);
   registry->RegisterIntegerPref(
       kIPFSResolveMethod,
@@ -174,8 +179,8 @@ void IpfsService::LaunchIfNotRunning(const base::FilePath& executable_path) {
 
   ipfs_service_.set_disconnect_handler(
       base::BindOnce(&IpfsService::OnIpfsCrashed, base::Unretained(this)));
-  ipfs_service_->SetCrashHandler(
-      base::Bind(&IpfsService::OnIpfsDaemonCrashed, base::Unretained(this)));
+  ipfs_service_->SetCrashHandler(base::BindOnce(
+      &IpfsService::OnIpfsDaemonCrashed, base::Unretained(this)));
 
   auto config = mojom::IpfsConfig::New(
       executable_path, GetConfigFilePath(), GetDataPath(),
@@ -184,7 +189,7 @@ void IpfsService::LaunchIfNotRunning(const base::FilePath& executable_path) {
 
   ipfs_service_->Launch(
       std::move(config),
-      base::Bind(&IpfsService::OnIpfsLaunched, base::Unretained(this)));
+      base::BindOnce(&IpfsService::OnIpfsLaunched, base::Unretained(this)));
 }
 
 void IpfsService::RestartDaemon() {
@@ -252,6 +257,7 @@ void IpfsService::NotifyIpnsKeysLoaded(bool result) {
 void IpfsService::OnIpfsLaunched(bool result, int64_t pid) {
   if (result) {
     ipfs_pid_ = pid;
+    RegisterIpfsClientUpdater();
   } else {
     VLOG(0) << "Failed to launch IPFS";
     Shutdown();
@@ -567,7 +573,8 @@ void IpfsService::GetConfig(GetConfigCallback callback) {
 
 void IpfsService::OnConfigLoaded(GetConfigCallback callback,
                                  const std::pair<bool, std::string>& result) {
-  std::move(callback).Run(result.first, result.second);
+  if (callback)
+    std::move(callback).Run(result.first, result.second);
 }
 
 bool IpfsService::IsIPFSExecutableAvailable() const {

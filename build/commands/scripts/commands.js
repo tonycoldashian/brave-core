@@ -19,6 +19,7 @@ const l10nDeleteTranslations = require('../lib/l10nDeleteTranslations')
 const createDist = require('../lib/createDist')
 const test = require('../lib/test')
 const gnCheck = require('../lib/gnCheck')
+const pylint = require('../lib/pylint')
 
 const collect = (value, accumulator) => {
   accumulator.push(value)
@@ -101,6 +102,7 @@ program
   .option('--brave_safetynet_api_key <brave_safetynet_api_key>')
   .option('--is_asan', 'is asan enabled')
   .option('--use_goma', 'whether to use Goma for building')
+  .option('--auto_gn_gen', 'use gn gen only if required')
   .arguments('[build_config]')
   .action(build)
 
@@ -143,6 +145,7 @@ program
   .option('--universal', 'build a universal binary distribution')
   .option('--is_asan', 'is asan enabled')
   .option('--use_goma', 'whether to use Goma for building')
+  .option('--auto_gn_gen', 'use gn gen only if required')
   .arguments('[build_config]')
   .action(createDist)
 
@@ -238,6 +241,12 @@ program
   .command('lint')
   .option('--base <base branch>', 'set the destination branch for the PR')
   .action(util.lint)
+
+program
+  .command('pylint')
+  .option('--base <base_branch>', 'only analyse files changed relative to base_branch')
+  .option('--report', 'produce a parseable report file')
+  .action(pylint)
 
 program
   .command('format')

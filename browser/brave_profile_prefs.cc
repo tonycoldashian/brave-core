@@ -10,6 +10,7 @@
 #include "brave/browser/new_tab/new_tab_shows_options.h"
 
 #include "brave/browser/brave_shields/brave_shields_web_contents_observer.h"
+#include "brave/browser/ethereum_remote_client/buildflags/buildflags.h"
 #include "brave/browser/search/ntp_utils.h"
 #include "brave/browser/themes/brave_dark_mode_utils.h"
 #include "brave/browser/ui/omnibox/brave_omnibox_client_impl.h"
@@ -20,7 +21,6 @@
 #include "brave/components/brave_rewards/common/pref_names.h"
 #include "brave/components/brave_shields/common/pref_names.h"
 #include "brave/components/brave_sync/brave_sync_prefs.h"
-#include "brave/components/brave_wallet/browser/brave_wallet_utils.h"
 #include "brave/components/brave_wallet/common/buildflags/buildflags.h"
 #include "brave/components/brave_wayback_machine/buildflags.h"
 #include "brave/components/brave_webtorrent/browser/buildflags/buildflags.h"
@@ -62,8 +62,12 @@
 #endif
 
 #if BUILDFLAG(BRAVE_WALLET_ENABLED)
-#include "brave/components/brave_wallet/browser/brave_wallet_constants.h"
-#include "brave/components/brave_wallet/browser/pref_names.h"
+#include "brave/components/brave_wallet/browser/brave_wallet_service.h"
+#endif
+
+#if BUILDFLAG(ETHEREUM_REMOTE_CLIENT_ENABLED)
+#include "brave/browser/ethereum_remote_client/ethereum_remote_client_constants.h"
+#include "brave/browser/ethereum_remote_client/pref_names.h"
 #endif
 
 #if BUILDFLAG(IPFS_ENABLED)
@@ -139,6 +143,8 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterIntegerPref(
       kAlternativeSearchEngineProviderInTor,
       TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_INVALID);
+  // Added 05/2021
+  registry->RegisterBooleanPref(kBraveTodayIntroDismissed, false);
 }
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -147,7 +153,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if BUILDFLAG(ENABLE_BRAVE_PERF_PREDICTOR)
   brave_perf_predictor::PerfPredictorTabHelper::RegisterProfilePrefs(registry);
-  brave_perf_predictor::P3ABandwidthSavingsTracker::RegisterPrefs(registry);
+  brave_perf_predictor::P3ABandwidthSavingsTracker::RegisterProfilePrefs(
+      registry);
 #endif
 
   // appearance
@@ -184,7 +191,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
                                 false);
 
 #if BUILDFLAG(IPFS_ENABLED)
-  ipfs::IpfsService::RegisterPrefs(registry);
+  ipfs::IpfsService::RegisterProfilePrefs(registry);
 #endif
 
   // WebTorrent
@@ -304,28 +311,22 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
   // Brave Today
   registry->RegisterDictionaryPref(kBraveTodaySources);
-  registry->RegisterBooleanPref(kBraveTodayIntroDismissed, false);
+  registry->RegisterBooleanPref(kBraveTodayOptedIn, false);
   registry->RegisterListPref(kBraveTodayWeeklySessionCount);
   registry->RegisterListPref(kBraveTodayWeeklyCardViewsCount);
   registry->RegisterListPref(kBraveTodayWeeklyCardVisitsCount);
 
+#if BUILDFLAG(ETHEREUM_REMOTE_CLIENT_ENABLED)
+  registry->RegisterIntegerPref(kERCPrefVersion, 0);
+  registry->RegisterStringPref(kERCAES256GCMSivNonce, "");
+  registry->RegisterStringPref(kERCEncryptedSeed, "");
+  registry->RegisterBooleanPref(kERCLoadCryptoWalletsOnStartup, false);
+  registry->RegisterBooleanPref(kERCOptedIntoCryptoWallets, false);
+#endif
+
   // Brave Wallet
 #if BUILDFLAG(BRAVE_WALLET_ENABLED)
-  registry->RegisterIntegerPref(kBraveWalletPrefVersion, 0);
-  registry->RegisterStringPref(kBraveWalletAES256GCMSivNonce, "");
-  registry->RegisterStringPref(kBraveWalletEncryptedSeed, "");
-  registry->RegisterIntegerPref(
-      kBraveWalletWeb3Provider,
-      static_cast<int>(brave_wallet::IsNativeWalletEnabled()
-                           ? BraveWalletWeb3ProviderTypes::BRAVE_WALLET
-                           : BraveWalletWeb3ProviderTypes::ASK));
-  registry->RegisterBooleanPref(kLoadCryptoWalletsOnStartup, false);
-  registry->RegisterBooleanPref(kOptedIntoCryptoWallets, false);
-  registry->RegisterStringPref(kBraveWalletPasswordEncryptorSalt, "");
-  registry->RegisterStringPref(kBraveWalletPasswordEncryptorNonce, "");
-  registry->RegisterStringPref(kBraveWalletEncryptedMnemonic, "");
-  registry->RegisterIntegerPref(kBraveWalletDefaultKeyringAccountNum, 0);
-  registry->RegisterBooleanPref(kShowWalletIconOnToolbar, true);
+  brave_wallet::BraveWalletService::RegisterProfilePrefs(registry);
 #endif
 
   // Binance widget
@@ -358,27 +359,27 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       TemplateURLPrepopulateData::kBraveCurrentDataVersion);
 
 #if BUILDFLAG(ENABLE_SPEEDREADER)
-  speedreader::SpeedreaderService::RegisterPrefs(registry);
+  speedreader::SpeedreaderService::RegisterProfilePrefs(registry);
 #endif
 
 #if BUILDFLAG(CRYPTO_DOT_COM_ENABLED)
-  crypto_dot_com::RegisterPrefs(registry);
+  crypto_dot_com::RegisterProfilePrefs(registry);
 #endif
 
 #if BUILDFLAG(ENABLE_FTX)
-  ftx::RegisterPrefs(registry);
+  ftx::RegisterProfilePrefs(registry);
 #endif
 
 #if BUILDFLAG(ENABLE_TOR)
-  tor::TorProfileService::RegisterPrefs(registry);
+  tor::TorProfileService::RegisterProfilePrefs(registry);
 #endif
 
 #if BUILDFLAG(ENABLE_SIDEBAR)
-  sidebar::SidebarService::RegisterPrefs(registry);
+  sidebar::SidebarService::RegisterProfilePrefs(registry);
 #endif
 
 #if !defined(OS_ANDROID)
-  BraveOmniboxClientImpl::RegisterPrefs(registry);
+  BraveOmniboxClientImpl::RegisterProfilePrefs(registry);
 #endif
 
 #if !defined(OS_ANDROID)

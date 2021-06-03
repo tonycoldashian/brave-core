@@ -6,16 +6,22 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators, Dispatch } from 'redux'
-import { ConnectWithSite } from '../components/extension'
-import { StyledExtensionWrapper } from '../stories/style'
+import { ConnectWithSite, ConnectedPanel, Panel, WelcomePanel } from '../components/extension'
+import { AppList } from '../components/shared'
+import { filterAppList } from '../utils/filter-app-list'
+import { ScrollContainer, StyledExtensionWrapper } from '../stories/style'
 import store from './store'
 import * as WalletPanelActions from './actions/wallet_panel_actions'
-import { WalletState, PanelState, WalletPanelState, WalletAccountType } from '../constants/types'
+import * as WalletActions from '../common/actions/wallet_actions'
+import { AppObjectType, AppsListType, WalletState, PanelState, PanelTypes, WalletPanelState, WalletAccountType } from '../constants/types'
+import { AppsList } from '../options/apps-list-options'
+import LockPanel from '../components/extension/lock-panel'
 
 type Props = {
   panel: PanelState
   wallet: WalletState
-  actions: typeof WalletPanelActions
+  walletPanelActions: typeof WalletPanelActions
+  walletActions: typeof WalletActions
 }
 
 function mapStateToProps (state: WalletPanelState): Partial<Props> {
@@ -27,18 +33,23 @@ function mapStateToProps (state: WalletPanelState): Partial<Props> {
 
 function mapDispatchToProps (dispatch: Dispatch): Partial<Props> {
   return {
-    actions: bindActionCreators(WalletPanelActions, store.dispatch.bind(store))
+    walletPanelActions: bindActionCreators(WalletPanelActions, store.dispatch.bind(store)),
+    walletActions: bindActionCreators(WalletActions, store.dispatch.bind(store))
   }
 }
 
-function Panel (props: Props) {
+function Container (props: Props) {
   // TODO(petemill): If initial data or UI takes a noticeable amount of time to arrive
   // consider rendering a "loading" indicator when `hasInitialized === false`, and
   // also using `React.lazy` to put all the main UI in a separate JS bundle and display
   // that loading indicator ASAP.
-  const [selectedAccounts, setSelectedAccounts] = React.useState<WalletAccountType[]>([
-    props.panel.accounts[0]
-  ])
+  const [selectedAccounts, setSelectedAccounts] = React.useState<WalletAccountType[]>([])
+  const [filteredAppsList, setFilteredAppsList] = React.useState<AppsListType[]>(AppsList)
+  const [walletConnected, setWalletConnected] = React.useState<boolean>(true)
+  const toggleConnected = () => {
+    setWalletConnected(!walletConnected)
+  }
+
   const [readyToConnect, setReadyToConnect] = React.useState<boolean>(false)
   const selectAccount = (account: WalletAccountType) => {
     const newList = [...selectedAccounts, account]
@@ -50,8 +61,9 @@ function Panel (props: Props) {
     )
     setSelectedAccounts(newList)
   }
+  const [inputValue, setInputValue] = React.useState<string>('')
   const onSubmit = () => {
-    props.actions.connectToSite({
+    props.walletPanelActions.connectToSite({
       selectedAccounts,
       siteToConnectTo: props.panel.connectedSiteOrigin
     })
@@ -67,23 +79,111 @@ function Panel (props: Props) {
     if (readyToConnect) {
       setReadyToConnect(false)
     } else {
-      props.actions.cancelConnectToSite()
+      props.walletPanelActions.cancelConnectToSite()
     }
   }
+  const unlockWallet = () => {
+    props.walletActions.unlockWallet({ password: inputValue })
+  }
+  const handlePasswordChanged = (value: string) => {
+    setInputValue(value)
+  }
+  const onRestore = () => {
+    props.walletPanelActions.restoreWallet()
+  }
+  const onSetup = () => {
+    props.walletPanelActions.setupWallet()
+  }
+  const addToFavorites = (app: AppObjectType) => {
+    props.walletActions.addFavoriteApp(app)
+  }
+
+  const navigateTo = (selectedPanel: PanelTypes) => {
+    if (selectedPanel === 'expanded') {
+      props.walletPanelActions.expandWallet()
+    } else {
+      props.walletPanelActions.navigateTo(selectedPanel)
+    }
+  }
+
+  const browseMore = () => {
+    props.walletPanelActions.openWalletApps()
+  }
+
+  const removeFromFavorites = (app: AppObjectType) => {
+    props.walletActions.removeFavoriteApp(app)
+  }
+
+  const filterList = (event: any) => {
+    filterAppList(event, AppsList, setFilteredAppsList)
+  }
+
+  if (!props.wallet.hasInitialized || !props.wallet.accounts) {
+    return null
+  }
+
+  if (!props.wallet.isWalletCreated) {
+    return (
+      <StyledExtensionWrapper>
+        <WelcomePanel onRestore={onRestore} onSetup={onSetup} />
+      </StyledExtensionWrapper>)
+  }
+
+  if (props.wallet.isWalletLocked) {
+    return (
+      <StyledExtensionWrapper>
+        <LockPanel onSubmit={unlockWallet} disabled={inputValue === ''} onPasswordChanged={handlePasswordChanged} />
+      </StyledExtensionWrapper>)
+  }
+
+  if (props.panel.selectedPanel === 'apps') {
+    return (
+      <StyledExtensionWrapper>
+        <Panel
+          navAction={navigateTo}
+          title={props.panel.panelTitle}
+          useSearch={props.panel.selectedPanel === 'apps'}
+          searchAction={props.panel.selectedPanel === 'apps' ? filterList : undefined}
+        >
+          <ScrollContainer>
+            <AppList
+              list={filteredAppsList}
+              favApps={props.wallet.favoriteApps}
+              addToFav={addToFavorites}
+              removeFromFav={removeFromFavorites}
+              action={browseMore}
+            />
+          </ScrollContainer>
+        </Panel>
+      </StyledExtensionWrapper>)
+  }
+
+  if (props.panel.selectedPanel === 'connectWithSite') {
+    return (
+      <StyledExtensionWrapper>
+        <ConnectWithSite
+              siteURL={props.panel.connectedSiteOrigin}
+              isReady={readyToConnect}
+              accounts={props.wallet.accounts}
+              primaryAction={primaryAction}
+              secondaryAction={secondaryAction}
+              selectAccount={selectAccount}
+              removeAccount={removeAccount}
+              selectedAccounts={selectedAccounts}
+        />
+      </StyledExtensionWrapper>)
+  }
+
   return (
-    <StyledExtensionWrapper>
-      <ConnectWithSite
-        siteURL={props.panel.connectedSiteOrigin}
-        isReady={readyToConnect}
-        accounts={props.panel.accounts}
-        primaryAction={primaryAction}
-        secondaryAction={secondaryAction}
-        selectAccount={selectAccount}
-        removeAccount={removeAccount}
-        selectedAccounts={selectedAccounts}
+    <>
+      <ConnectedPanel
+        selectedAccount={props.wallet.accounts[0]}
+        isConnected={walletConnected}
+        connectAction={toggleConnected}
+        navAction={navigateTo}
       />
-    </StyledExtensionWrapper>
-  )
+    </>)
+
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Panel)
+export default connect(mapStateToProps, mapDispatchToProps)(Container)

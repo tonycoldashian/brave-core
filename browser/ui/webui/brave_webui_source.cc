@@ -178,6 +178,8 @@ void CustomizeWebUIHTMLSource(const std::string &name,
         { "braveTodayTitle", IDS_BRAVE_TODAY_TITLE },
         { "braveTodayIntroTitle", IDS_BRAVE_TODAY_INTRO_TITLE },
         { "braveTodayIntroDescription", IDS_BRAVE_TODAY_INTRO_DESCRIPTION },
+        { "braveTodayOptInActionLabel", IDS_BRAVE_TODAY_OPT_IN_ACTION_LABEL },
+        { "braveTodayOptOutActionLabel", IDS_BRAVE_TODAY_OPT_OUT_ACTION_LABEL },
         { "braveTodayStatusFetching", IDS_BRAVE_TODAY_STATUS_FETCHING},
         { "braveTodayActionRefresh", IDS_BRAVE_TODAY_ACTION_REFRESH},
         { "braveTodayScrollHint", IDS_BRAVE_TODAY_SCROLL_HINT},
@@ -506,6 +508,7 @@ void CustomizeWebUIHTMLSource(const std::string &name,
         { "contributionUpTo",  IDS_BRAVE_REWARDS_LOCAL_CONTR_UP_TO },
 
         { "deviceOffline", IDS_BRAVE_REWARDS_LOCAL_DEVICE_OFFLINE },
+        { "disconnectWalletFailed",  IDS_BRAVE_REWARDS_LOCAL_SERVER_DISCONNECT_FAILED },         // NOLINT
         { "donationTitle",  IDS_BRAVE_REWARDS_LOCAL_DONAT_TITLE },
         { "donationDesc",  IDS_BRAVE_REWARDS_LOCAL_DONAT_DESC },
         { "donationTotalDonations",  IDS_BRAVE_REWARDS_LOCAL_DONAT_TOTAL_DONATIONS },            // NOLINT

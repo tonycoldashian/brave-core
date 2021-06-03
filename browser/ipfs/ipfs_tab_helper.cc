@@ -17,6 +17,7 @@
 #include "brave/components/ipfs/pref_names.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/common/channel_info.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
@@ -163,7 +164,22 @@ GURL IPFSTabHelper::GetIPFSResolvedURL() const {
   GURL::Replacements replacements;
   replacements.SetQueryStr(current.query_piece());
   replacements.SetRefStr(current.ref_piece());
-  return ipfs_resolved_url_.ReplaceComponents(replacements);
+  std::string cid;
+  std::string path;
+  ipfs::ParseCIDAndPathFromIPFSUrl(ipfs_resolved_url_, &cid, &path);
+  auto resolved_scheme = ipfs_resolved_url_.scheme();
+  std::string resolved_path = current.path();
+  std::vector<std::string> parts = base::SplitString(
+      current.path(), "/", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  // If public gateway like https://ipfs.io/ipfs/{cid}/..
+  // skip duplication for /{scheme}/{cid}/ and add the rest parts
+  if (parts.size() > 3 && parts[1] == resolved_scheme && parts[2] == cid) {
+    parts.erase(parts.begin() + 1, parts.begin() + 3);
+    resolved_path = base::JoinString(parts, "/");
+  }
+  std::string current_ipfs_url = resolved_scheme + "://" + cid + resolved_path;
+  GURL resolved_url(current_ipfs_url);
+  return resolved_url.ReplaceComponents(replacements);
 }
 
 void IPFSTabHelper::ResolveIPFSLink() {
@@ -207,14 +223,18 @@ void IPFSTabHelper::UpdateDnsLinkButtonState() {
   }
 }
 
+bool IPFSTabHelper::CanResolveURL(const GURL& url) const {
+  return url.SchemeIsHTTPOrHTTPS() &&
+         !IsAPIGateway(url.GetOrigin(), chrome::GetChannel());
+}
+
 void IPFSTabHelper::MaybeShowDNSLinkButton(content::NavigationHandle* handle) {
   UpdateDnsLinkButtonState();
   if (!IsDNSLinkCheckEnabled() || !handle->GetResponseHeaders())
     return;
-  GURL current = web_contents()->GetURL();
-  if (ipfs_resolved_url_.is_valid() || !current.SchemeIsHTTPOrHTTPS() ||
-      IsDefaultGatewayURL(current, web_contents()->GetBrowserContext()))
+  if (ipfs_resolved_url_.is_valid() && !CanResolveURL(web_contents()->GetURL()))
     return;
+
   int response_code = handle->GetResponseHeaders()->response_code();
   if (response_code >= net::HttpStatusCode::HTTP_INTERNAL_SERVER_ERROR &&
       response_code <= net::HttpStatusCode::HTTP_VERSION_NOT_SUPPORTED) {

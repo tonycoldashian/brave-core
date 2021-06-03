@@ -24,6 +24,7 @@
 #include "components/prefs/pref_service.h"
 #include "net/base/features.h"
 
+using brave_shields::features::kBraveAdblockCnameUncloaking;
 using brave_shields::features::kBraveAdblockCosmeticFiltering;
 using brave_shields::features::kBraveAdblockCosmeticFilteringNative;
 using brave_shields::features::kBraveAdblockCspRules;
@@ -54,14 +55,14 @@ using ntp_background_images::features::kBraveNTPSuperReferralWallpaper;
 #include "brave/components/speedreader/features.h"
 
 #define SPEEDREADER_FEATURE_ENTRIES \
-    {"brave-speedreader",                                                    \
-     flag_descriptions::kBraveSpeedreaderName,                               \
-     flag_descriptions::kBraveSpeedreaderDescription, kOsDesktop,            \
-     FEATURE_VALUE_TYPE(speedreader::kSpeedreaderFeature)},                  \
-    {"speedreader-readability-backend",                                      \
-     flag_descriptions::kBraveSpeedreaderReadabilityName,                    \
-     flag_descriptions::kBraveSpeedreaderReadabilityDescription, kOsDesktop, \
-     FEATURE_VALUE_TYPE(speedreader::kSpeedreaderReadabilityBackend)},
+    {"brave-speedreader",                                               \
+     flag_descriptions::kBraveSpeedreaderName,                          \
+     flag_descriptions::kBraveSpeedreaderDescription, kOsDesktop,       \
+     FEATURE_VALUE_TYPE(speedreader::kSpeedreaderFeature)},             \
+    {"speedreader-legacy-backend",                                      \
+     flag_descriptions::kBraveSpeedreaderLegacyName,                    \
+     flag_descriptions::kBraveSpeedreaderLegacyDescription, kOsDesktop, \
+     FEATURE_VALUE_TYPE(speedreader::kSpeedreaderLegacyBackend)},
 #else
 #define SPEEDREADER_FEATURE_ENTRIES
 #endif
@@ -130,6 +131,10 @@ using ntp_background_images::features::kBraveNTPSuperReferralWallpaper;
      flag_descriptions::kBraveNTPBrandedWallpaperDemoName,                  \
      flag_descriptions::kBraveNTPBrandedWallpaperDemoDescription, kOsAll,   \
      FEATURE_VALUE_TYPE(kBraveNTPBrandedWallpaperDemo)},                    \
+    {"brave-adblock-cname-uncloaking",                                      \
+     flag_descriptions::kBraveAdblockCnameUncloakingName,                   \
+     flag_descriptions::kBraveAdblockCnameUncloakingDescription, kOsAll,    \
+     FEATURE_VALUE_TYPE(kBraveAdblockCnameUncloaking)},                     \
     {"brave-adblock-cosmetic-filtering",                                    \
      flag_descriptions::kBraveAdblockCosmeticFilteringName,                 \
      flag_descriptions::kBraveAdblockCosmeticFilteringDescription, kOsAll,  \
@@ -176,7 +181,8 @@ using ntp_background_images::features::kBraveNTPSuperReferralWallpaper;
      FEATURE_VALUE_TYPE(permissions::features::kPermissionLifetime)},       \
     {"brave-rewards-verbose-logging",                                       \
      flag_descriptions::kBraveRewardsVerboseLoggingName,                    \
-     flag_descriptions::kBraveRewardsVerboseLoggingDescription, kOsDesktop, \
+     flag_descriptions::kBraveRewardsVerboseLoggingDescription,             \
+     kOsDesktop | kOsAndroid,                                               \
      FEATURE_VALUE_TYPE(brave_rewards::features::kVerboseLoggingFeature)},  \
     {"brave-rewards-bitflyer",                                              \
      flag_descriptions::kBraveRewardsBitflyerName,                          \

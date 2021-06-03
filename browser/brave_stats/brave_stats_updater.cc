@@ -13,13 +13,13 @@
 #include "bat/ads/pref_names.h"
 #include "brave/browser/brave_stats/brave_stats_updater_params.h"
 #include "brave/browser/brave_stats/switches.h"
-#include "brave/browser/version_info.h"
 #include "brave/common/brave_channel_info.h"
 #include "brave/common/network_constants.h"
 #include "brave/common/pref_names.h"
 #include "brave/components/brave_referrals/buildflags/buildflags.h"
 #include "brave/components/brave_stats/browser/brave_stats_updater_util.h"
 #include "brave/components/rpill/common/rpill.h"
+#include "brave/components/version_info/version_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -44,8 +44,10 @@ namespace brave_stats {
 
 namespace {
 
-BraveStatsUpdater::StatsUpdatedCallback g_testing_stats_updated_callback;
-BraveStatsUpdater::StatsUpdatedCallback g_testing_stats_threshold_callback;
+BraveStatsUpdater::StatsUpdatedCallback* g_testing_stats_updated_callback =
+    nullptr;
+BraveStatsUpdater::StatsUpdatedCallback* g_testing_stats_threshold_callback =
+    nullptr;
 
 // Ping the update server shortly after startup.
 static constexpr int kUpdateServerStartupPingDelaySeconds = 3;
@@ -187,13 +189,13 @@ bool BraveStatsUpdater::MaybeDoThresholdPing(int score) {
 
 // static
 void BraveStatsUpdater::SetStatsUpdatedCallbackForTesting(
-    StatsUpdatedCallback stats_updated_callback) {
+    StatsUpdatedCallback* stats_updated_callback) {
   g_testing_stats_updated_callback = stats_updated_callback;
 }
 
 // static
 void BraveStatsUpdater::SetStatsThresholdCallbackForTesting(
-    StatsUpdatedCallback stats_threshold_callback) {
+    StatsUpdatedCallback* stats_threshold_callback) {
   g_testing_stats_threshold_callback = stats_threshold_callback;
 }
 
@@ -235,7 +237,7 @@ void BraveStatsUpdater::OnSimpleLoaderComplete(
 
   // Inform the client that the stats ping completed, if requested.
   if (g_testing_stats_updated_callback)
-    g_testing_stats_updated_callback.Run(final_url);
+    g_testing_stats_updated_callback->Run(final_url);
 
   // In case the first call was blocked by our timer.
   (void)MaybeDoThresholdPing(0);
@@ -262,7 +264,7 @@ void BraveStatsUpdater::OnThresholdLoaderComplete(
 
   // Inform the client that the threshold ping completed, if requested.
   if (g_testing_stats_threshold_callback)
-    g_testing_stats_threshold_callback.Run(final_url);
+    g_testing_stats_threshold_callback->Run(final_url);
 
   // We only send this query once.
   DisableThresholdPing();
@@ -329,8 +331,8 @@ void BraveStatsUpdater::QueueServerPing() {
     pref_change_registrar_->Init(pref_service_);
     pref_change_registrar_->Add(
         kReferralInitialization,
-        base::Bind(&BraveStatsUpdater::OnReferralInitialization,
-                   base::Unretained(this)));
+        base::BindRepeating(&BraveStatsUpdater::OnReferralInitialization,
+                            base::Unretained(this)));
   }
   if (ads_enabled) {
     DetectUncertainFuture();

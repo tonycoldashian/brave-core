@@ -18,6 +18,7 @@
 #include "brave/browser/brave_browser_main_extra_parts.h"
 #include "brave/browser/brave_browser_process.h"
 #include "brave/browser/brave_shields/brave_shields_web_contents_observer.h"
+#include "brave/browser/ethereum_remote_client/buildflags/buildflags.h"
 #include "brave/browser/net/brave_proxying_url_loader_factory.h"
 #include "brave/browser/net/brave_proxying_web_socket.h"
 #include "brave/browser/profiles/brave_renderer_updater.h"
@@ -70,8 +71,10 @@
 #include "net/cookies/site_for_cookies.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
+#include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using blink::web_pref::WebPreferences;
 using brave_shields::BraveShieldsWebContentsObserver;
 using brave_shields::ControlType;
 using brave_shields::GetBraveShieldsEnabled;
@@ -135,15 +138,21 @@ using extensions::ChromeContentBrowserClientExtensionsPart;
 #if BUILDFLAG(BRAVE_WALLET_ENABLED)
 #include "brave/browser/brave_wallet/brave_wallet_context_utils.h"
 #include "brave/browser/brave_wallet/brave_wallet_service_factory.h"
-#include "brave/components/brave_wallet/browser/brave_wallet_constants.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_provider_impl.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_service.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_utils.h"
 #include "brave/components/brave_wallet/common/brave_wallet.mojom.h"
 #if !defined(OS_ANDROID)
+#include "brave/browser/ui/webui/brave_wallet/wallet_page_ui.h"
 #include "brave/browser/ui/webui/brave_wallet/wallet_panel_ui.h"
-#include "brave/components/brave_wallet_ui/wallet_panel.mojom.h"
+#include "brave/components/brave_wallet_ui/wallet_ui.mojom.h"
 #endif
+#endif
+
+#if BUILDFLAG(ETHEREUM_REMOTE_CLIENT_ENABLED)
+#include "brave/browser/ethereum_remote_client/ethereum_remote_client_constants.h"
+#include "brave/browser/ethereum_remote_client/ethereum_remote_client_service.h"
+#include "brave/browser/ethereum_remote_client/ethereum_remote_client_service_factory.h"
 #endif
 
 #if !defined(OS_ANDROID)
@@ -193,8 +202,9 @@ void MaybeBindBraveWalletProvider(
   if (!brave_wallet::IsAllowedForContext(context))
     return;
 
-  BraveWalletService* service =
-      BraveWalletServiceFactory::GetInstance()->GetForContext(context);
+  brave_wallet::BraveWalletService* service =
+      brave_wallet::BraveWalletServiceFactory::GetInstance()->GetForContext(
+          context);
 
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<brave_wallet::BraveWalletProviderImpl>(
@@ -296,7 +306,9 @@ void BraveContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
   }
 #if !defined(OS_ANDROID)
   chrome::internal::RegisterWebUIControllerInterfaceBinder<
-      wallet_panel::mojom::PageHandlerFactory, WalletPanelUI>(map);
+      wallet_ui::mojom::PanelHandlerFactory, WalletPanelUI>(map);
+  chrome::internal::RegisterWebUIControllerInterfaceBinder<
+      wallet_ui::mojom::PageHandlerFactory, WalletPageUI>(map);
 #endif
 #endif
 }
@@ -536,9 +548,10 @@ bool BraveContentBrowserClient::HandleURLOverrideRewrite(
     return true;
   }
 
-#if BUILDFLAG(BRAVE_WALLET_ENABLED) && BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ETHEREUM_REMOTE_CLIENT_ENABLED) && BUILDFLAG(ENABLE_EXTENSIONS)
   // If the Crypto Wallets extension is loaded, then it replaces the WebUI
-  auto* service = BraveWalletServiceFactory::GetForContext(browser_context);
+  auto* service =
+      EthereumRemoteClientServiceFactory::GetForContext(browser_context);
   if (service->IsCryptoWalletsReady() &&
       url->SchemeIs(content::kChromeUIScheme) &&
       url->host() == ethereum_remote_client_host) {
@@ -624,4 +637,24 @@ BraveContentBrowserClient::CreateThrottlesForNavigation(
     throttles.push_back(std::move(domain_block_navigation_throttle));
 
   return throttles;
+}
+
+bool BraveContentBrowserClient::OverrideWebPreferencesAfterNavigation(
+    WebContents* web_contents,
+    WebPreferences* prefs) {
+  bool changed =
+      ChromeContentBrowserClient::OverrideWebPreferencesAfterNavigation(
+          web_contents, prefs);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  auto fingerprinting_type = brave_shields::GetFingerprintingControlType(
+      HostContentSettingsMapFactory::GetForProfile(profile),
+      web_contents->GetLastCommittedURL());
+  // https://github.com/brave/brave-browser/issues/15265
+  // Always use color scheme Light if fingerprinting mode strict
+  if (fingerprinting_type == ControlType::BLOCK) {
+    prefs->preferred_color_scheme = blink::mojom::PreferredColorScheme::kLight;
+    changed = true;
+  }
+  return changed;
 }

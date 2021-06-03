@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "brave/components/ipfs/ipfs_constants.h"
+#include "brave/components/ipfs/ipfs_ports.h"
 #include "brave/components/ipfs/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -16,6 +17,7 @@
 #include "components/version_info/channel.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
+#include "net/base/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -38,6 +40,17 @@ class IpfsUtilsUnitTest : public testing::Test {
   const GURL& local_gateway() { return local_gateway_; }
   const GURL& public_gateway() { return public_gateway_; }
   PrefService* prefs() { return &prefs_; }
+
+  bool ValidatePeerAddress(const std::string& value,
+                           const std::string& expected_id,
+                           const std::string& expected_address) {
+    std::string id;
+    std::string address;
+    bool result = ipfs::ParsePeerConnectionString(value, &id, &address);
+    EXPECT_EQ(id, expected_id);
+    EXPECT_EQ(address, expected_address);
+    return result;
+  }
 
   void SetIPFSResolveMethodPref(ipfs::IPFSResolveMethodTypes type) {
     prefs_.SetInteger(kIPFSResolveMethod, static_cast<int>(type));
@@ -551,4 +564,67 @@ TEST_F(IpfsUtilsUnitTest, IsIpfsMenuEnabled) {
   SetIPFSResolveMethodPref(ipfs::IPFSResolveMethodTypes::IPFS_LOCAL);
   ASSERT_TRUE(ipfs::IsLocalGatewayConfigured(context()));
   ASSERT_TRUE(ipfs::IsIpfsMenuEnabled(context()));
+}
+
+TEST_F(IpfsUtilsUnitTest, ParsePeerConnectionStringTest) {
+  std::string id;
+  std::string address;
+  ASSERT_FALSE(ipfs::ParsePeerConnectionString("test", nullptr, nullptr));
+  ASSERT_FALSE(ipfs::ParsePeerConnectionString("test", nullptr, &address));
+  ASSERT_FALSE(ipfs::ParsePeerConnectionString("test", &id, nullptr));
+  ASSERT_TRUE(id.empty());
+  ASSERT_TRUE(address.empty());
+
+  std::string value =
+      "/ip4/104.131.131.82/udp/4001/quic/p2p/"
+      "QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ";
+  ASSERT_TRUE(ValidatePeerAddress(
+      value, "QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ",
+      "/ip4/104.131.131.82/udp/4001/quic"));
+
+  value = "/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ";
+  ASSERT_TRUE(ValidatePeerAddress(
+      value, "QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ", ""));
+
+  value = "QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ";
+  ASSERT_TRUE(ValidatePeerAddress(
+      value, "QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ", ""));
+  value = "12D3KooWBdmLJjhpgJ9KZgLM3f894ff9xyBfPvPjFNn7MKJpyrC2";
+  ASSERT_FALSE(ValidatePeerAddress(value, "", ""));
+  value =
+      "/ip4/46.21.210.45/udp/14406/quic/p2p/"
+      "12D3KooWBdmLJjhpgJ9KZgLM3f894ff9xyBfPvPjFNn7MKJpyrC2";
+  ASSERT_TRUE(ValidatePeerAddress(
+      value, "12D3KooWBdmLJjhpgJ9KZgLM3f894ff9xyBfPvPjFNn7MKJpyrC2",
+      "/ip4/46.21.210.45/udp/14406/quic"));
+}
+
+TEST_F(IpfsUtilsUnitTest, ValidateNodeFilename) {
+  ASSERT_TRUE(ipfs::IsValidNodeFilename("go-ipfs_v0.9.0-rc1_windows-amd64"));
+  ASSERT_TRUE(ipfs::IsValidNodeFilename("go-ipfs_v0.9.0-rc21_windows-amd64"));
+  ASSERT_TRUE(ipfs::IsValidNodeFilename("go-ipfs_v0.9.0_windows-amd64"));
+
+  ASSERT_TRUE(ipfs::IsValidNodeFilename("go-ipfs_v0.9.0-rc1_darwin-amd64"));
+  ASSERT_TRUE(ipfs::IsValidNodeFilename("go-ipfs_v0.9.0-rc21_darwin-amd64"));
+  ASSERT_TRUE(ipfs::IsValidNodeFilename("go-ipfs_v0.9.0_darwin-amd64"));
+
+  ASSERT_TRUE(ipfs::IsValidNodeFilename("go-ipfs_v0.9.0-rc1_linux-amd64"));
+  ASSERT_TRUE(ipfs::IsValidNodeFilename("go-ipfs_v0.9.0-rc21_linux-amd64"));
+  ASSERT_TRUE(ipfs::IsValidNodeFilename("go-ipfs_v0.9.0_linux-amd64"));
+
+  ASSERT_FALSE(ipfs::IsValidNodeFilename(""));
+  ASSERT_FALSE(ipfs::IsValidNodeFilename("ipfs.exe"));
+  ASSERT_FALSE(ipfs::IsValidNodeFilename("go-ipfs_v0.9.0_linux"));
+}
+
+TEST_F(IpfsUtilsUnitTest, IsAPIGatewayTest) {
+  auto channel = version_info::Channel::UNKNOWN;
+  GURL api_server = ipfs::GetAPIServer(channel);
+  ASSERT_TRUE(ipfs::IsAPIGateway(api_server, channel));
+  ASSERT_TRUE(net::IsLocalhost(api_server));
+  auto port = ipfs::GetAPIPort(channel);
+  ASSERT_TRUE(ipfs::IsAPIGateway(GURL("https://127.0.0.1:" + port), channel));
+  ASSERT_TRUE(ipfs::IsAPIGateway(GURL("https://localhost:" + port), channel));
+  ASSERT_FALSE(ipfs::IsAPIGateway(GURL("https://brave.com"), channel));
+  ASSERT_FALSE(ipfs::IsAPIGateway(GURL(), channel));
 }

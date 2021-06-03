@@ -36,8 +36,8 @@ SearchEngineProviderService::SearchEngineProviderService(
   use_alternative_search_engine_provider_.Init(
       kUseAlternativeSearchEngineProvider,
       otr_profile_->GetOriginalProfile()->GetPrefs(),
-      base::Bind(&SearchEngineProviderService::OnPreferenceChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&SearchEngineProviderService::OnPreferenceChanged,
+                          base::Unretained(this)));
 
   std::vector<TemplateURLPrepopulateData::BravePrepopulatedEngineID>
       alt_search_providers = {
@@ -81,8 +81,12 @@ void SearchEngineProviderService::ChangeToAlternativeSearchEngineProvider() {
 }
 
 void SearchEngineProviderService::ChangeToNormalWindowSearchEngineProvider() {
-  TemplateURL normal_url(
-      original_template_url_service_->GetDefaultSearchProvider()->data());
+  auto* default_provider =
+      original_template_url_service_->GetDefaultSearchProvider();
+  if (!default_provider)
+    return;
+
+  TemplateURL normal_url(default_provider->data());
   otr_template_url_service_->SetUserSelectedDefaultSearchProvider(
       &normal_url);
 }
@@ -93,7 +97,8 @@ void SearchEngineProviderService::UseExtensionSearchProvider() {
 
   const auto* extension_provider_url =
       original_template_url_service_->GetDefaultSearchProvider();
-  DCHECK(extension_provider_url);
+  if (!extension_provider_url)
+    return;
   auto data = extension_provider_url->data();
   data.id = kInvalidTemplateURLID;
 

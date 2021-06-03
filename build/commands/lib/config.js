@@ -557,6 +557,12 @@ Config.prototype.update = function (options) {
     this.use_goma = false
   }
 
+  if (options.auto_gn_gen) {
+    this.auto_gn_gen = true;
+  } else {
+    this.auto_gn_gen = false;
+  }
+
   if (options.C) {
     this.__outputDir = options.C
   }
@@ -739,6 +745,8 @@ Config.prototype.getCachePath = function () {
 Object.defineProperty(Config.prototype, 'defaultOptions', {
   get: function () {
     let env = Object.assign({}, process.env)
+    env = this.addPathToEnv(env, path.join(this.depotToolsDir, 'python3-bin'), true)
+    env = this.addPathToEnv(env, path.join(this.depotToolsDir, 'python2-bin'), true)
     env = this.addPathToEnv(env, this.depotToolsDir, true)
     env = this.addPythonPathToEnv(env, path.join(this.srcDir, 'brave', 'chromium_src', 'python_modules'))
     env = this.addPythonPathToEnv(env, path.join(this.srcDir, 'brave', 'script'))

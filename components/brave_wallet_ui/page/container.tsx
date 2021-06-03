@@ -8,6 +8,7 @@ import { connect } from 'react-redux'
 import { bindActionCreators, Dispatch } from 'redux'
 
 import * as WalletPageActions from './actions/wallet_page_actions'
+import * as WalletActions from '../common/actions/wallet_actions'
 import store from './store'
 
 import 'emptykit.css'
@@ -19,27 +20,30 @@ import {
   SideNav,
   WalletPageLayout,
   WalletSubViewLayout,
-  CryptoView
+  CryptoView,
+  LockScreen
 } from '../components/desktop'
 import {
   NavTypes,
-  NavObjectType,
   WalletState,
   PageState,
   WalletPageState
 } from '../constants/types'
-import { LinkedAccountsOptions, NavOptions, StaticOptions } from '../options/side-nav-options'
+import { NavOptions } from '../options/side-nav-options'
 import BuySendSwap from '../components/buy-send-swap'
+import Onboarding from '../stories/screens/onboarding'
+import BackupWallet from '../stories/screens/backup-wallet'
 
 type Props = {
   wallet: WalletState
   page: PageState
-  actions: typeof WalletPageActions
+  walletPageActions: typeof WalletPageActions
+  walletActions: typeof WalletActions
 }
 
 function Container (props: Props) {
   const [view, setView] = React.useState<NavTypes>('crypto')
-  const [linkedAccounts] = React.useState<NavObjectType[]>(LinkedAccountsOptions)
+  const [inputValue, setInputValue] = React.useState<string>('')
 
   // In the future these will be actual paths
   // for example wallet/rewards
@@ -47,29 +51,100 @@ function Container (props: Props) {
     setView(path)
   }
 
+  // recoveryVerified Prop will be used in a future PR.
+  const completeWalletSetup = (recoveryVerified: boolean) => {
+    if (recoveryVerified) {
+      props.walletPageActions.walletBackupComplete()
+    }
+    props.walletPageActions.walletSetupComplete()
+  }
+
+  const onBackupWallet = () => {
+    props.walletPageActions.walletBackupComplete()
+  }
+
+  const passwordProvided = (password: string) => {
+    props.walletPageActions.createWallet({ password })
+  }
+
+  const unlockWallet = () => {
+    props.walletActions.unlockWallet({ password: inputValue })
+  }
+
+  const lockWallet = () => {
+    props.walletActions.lockWallet()
+  }
+
+  const onShowBackup = () => {
+    props.walletPageActions.showRecoveryPhrase(true)
+  }
+
+  const onHideBackup = () => {
+    props.walletPageActions.showRecoveryPhrase(false)
+  }
+
+  const handlePasswordChanged = (value: string) => {
+    setInputValue(value)
+  }
+
+  const recoveryPhrase = (props.page.mnemonic || '').split(' ')
+  if (!props.wallet.isWalletCreated) {
+    return (
+      <WalletPageLayout>
+        <Onboarding
+          recoveryPhrase={recoveryPhrase}
+          onPasswordProvided={passwordProvided}
+          onSubmit={completeWalletSetup}
+        />
+      </WalletPageLayout>
+    )
+  }
+
   return (
     <WalletPageLayout>
-        <SideNav
-          navList={NavOptions}
-          staticList={StaticOptions}
-          selectedButton={view}
-          onSubmit={navigateTo}
-          linkedAccountsList={linkedAccounts}
-        />
-        <WalletSubViewLayout>
-          {view === 'crypto' ? (
-            <CryptoView />
-          ) : (
-            <div style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-              <h2>{view} view</h2>
-            </div>
-          )}
-
-        </WalletSubViewLayout>
-        <WalletWidgetStandIn>
-          <BuySendSwap />
-        </WalletWidgetStandIn>
-      </WalletPageLayout>
+      <SideNav
+        navList={NavOptions}
+        selectedButton={view}
+        onSubmit={navigateTo}
+      />
+      <WalletSubViewLayout>
+        {view === 'crypto' ? (
+          <>
+            {props.wallet.isWalletLocked ? (
+              <LockScreen
+                onSubmit={unlockWallet}
+                disabled={inputValue === ''}
+                onPasswordChanged={handlePasswordChanged}
+              />
+            ) : (
+              <>
+                {props.page.showRecoveryPhrase ? (
+                  <BackupWallet
+                    isOnboarding={false}
+                    onCancel={onHideBackup}
+                    onSubmit={onBackupWallet}
+                    recoveryPhrase={recoveryPhrase}
+                  />
+                ) : (
+                  <CryptoView
+                    onLockWallet={lockWallet}
+                    needsBackup={!props.wallet.isWalletBackedUp}
+                    onShowBackup={onShowBackup}
+                  />
+                )}
+              </>
+            )}
+          </>
+        ) : (
+          <div style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <h2>{view} view</h2>
+          </div>
+        )}
+      </WalletSubViewLayout>
+      <WalletWidgetStandIn>
+        <BuySendSwap />
+      </WalletWidgetStandIn>
+    </WalletPageLayout>
   )
 }
 
@@ -82,7 +157,8 @@ function mapStateToProps (state: WalletPageState): Partial<Props> {
 
 function mapDispatchToProps (dispatch: Dispatch): Partial<Props> {
   return {
-    actions: bindActionCreators(WalletPageActions, store.dispatch.bind(store))
+    walletPageActions: bindActionCreators(WalletPageActions, store.dispatch.bind(store)),
+    walletActions: bindActionCreators(WalletActions, store.dispatch.bind(store))
   }
 }
 

@@ -54,17 +54,12 @@ export type NavTypes =
   | 'crypto'
   | 'rewards'
   | 'cards'
-  | 'linked_accounts'
-  | 'gemini'
-  | 'creators'
-  | 'lock_wallet'
 
 export type TopTabNavTypes =
   | 'portfolio'
+  | 'prices'
+  | 'defi'
   | 'nfts'
-  | 'invest'
-  | 'lending'
-  | 'apps'
   | 'accounts'
 
 export type BuySendSwapTypes =
@@ -122,17 +117,26 @@ export interface PriceDataObjectType {
 }
 
 export interface WalletState {
+  hasInitialized: boolean
+  isWalletCreated: boolean
+  isWalletLocked: boolean
+  favoriteApps: AppObjectType[]
+  isWalletBackedUp: boolean
+  accounts: WalletAccountType[]
 }
 
 export interface PanelState {
   hasInitialized: boolean
   isConnected: boolean
   connectedSiteOrigin: string
-  accounts: WalletAccountType[]
+  selectedPanel: string
+  panelTitle: string
 }
 
 export interface PageState {
   hasInitialized: boolean
+  showRecoveryPhrase: boolean
+  mnemonic?: string
 }
 
 export interface WalletPageState {
@@ -143,4 +147,25 @@ export interface WalletPageState {
 export interface WalletPanelState {
   wallet: WalletState
   panel: PanelState
+}
+
+export interface WalletInfo {
+  isWalletCreated: boolean,
+  isWalletLocked: boolean,
+  favoriteApps: AppObjectType[],
+  isWalletBackedUp: boolean,
+  accounts: string[]
+}
+
+export interface WalletAPIHandler {
+  getWalletInfo: () => Promise<WalletInfo>
+  lockWallet: () => Promise<void>
+  unlockWallet: (password: string) => Promise<void>
+  addFavoriteApp: (appItem: AppObjectType) => Promise<void>
+  removeFavoriteApp: (appItem: AppObjectType) => Promise<void>
+}
+
+export interface RecoveryObject {
+  value: string,
+  id: number
 }

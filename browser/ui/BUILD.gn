@@ -1,3 +1,4 @@
+import("//brave/browser/ethereum_remote_client/buildflags/buildflags.gni")
 import("//brave/browser/translate/buildflags/buildflags.gni")
 import("//brave/build/config.gni")
 import("//brave/components/brave_rewards/browser/buildflags/buildflags.gni")
@@ -236,8 +237,8 @@ source_set("ui") {
     "//brave/components/brave_wayback_machine:buildflags",
     "//brave/components/cosmetic_filters/resources/data:generated_resources",
     "//brave/components/crypto_dot_com/browser/buildflags:buildflags",
-    "//brave/components/ftx/browser/buildflags:buildflags",
     "//brave/components/decentralized_dns/buildflags",
+    "//brave/components/ftx/browser/buildflags:buildflags",
     "//brave/components/l10n/browser",
     "//brave/components/l10n/common",
     "//brave/components/ntp_background_images/browser",
@@ -332,7 +333,6 @@ source_set("ui") {
   if (!is_android) {
     deps += [
       "//brave/app:brave_generated_resources_grit",
-      "//brave/browser:version_info",
       "//brave/browser/resources/settings:resources",
       "//brave/browser/ui/bookmark",
       "//brave/components/brave_new_tab_ui:generated_resources",
@@ -340,6 +340,7 @@ source_set("ui") {
       "//brave/components/brave_sync",
       "//brave/components/brave_sync:profile_sync_service_helper",
       "//brave/components/brave_welcome_ui:generated_resources",
+      "//brave/components/version_info",
       "//chrome/app:chromium_strings",
       "//components/sync_device_info",
       "//third_party/blink/public/common",
@@ -475,22 +476,32 @@ source_set("ui") {
     deps += [ "//brave/components/tor/resources:internals_generated_resources" ]
   }
 
-  if (brave_wallet_enabled && !is_android) {
+  if (brave_wallet_enabled && !is_android && !is_ios) {
     sources += [
       "views/toolbar/wallet_button.cc",
       "views/toolbar/wallet_button.h",
+      "webui/brave_wallet/wallet_page_ui.cc",
+      "webui/brave_wallet/wallet_page_ui.h",
       "webui/brave_wallet/wallet_panel_ui.cc",
       "webui/brave_wallet/wallet_panel_ui.h",
-      "webui/brave_wallet_ui.cc",
-      "webui/brave_wallet_ui.h",
     ]
     deps += [
-      "webui/brave_wallet/page_handler",
-      "//brave/components/brave_wallet_ui:brave_wallet_page_generated",
-      "//brave/components/brave_wallet_ui:brave_wallet_panel_generated",
+      "//brave/browser/ui/webui/brave_wallet/common_handler",
+      "//brave/browser/ui/webui/brave_wallet/page_handler",
+      "//brave/browser/ui/webui/brave_wallet/panel_handler",
       "//brave/components/brave_wallet_ui:mojo_bindings",
       "//brave/components/brave_wallet_ui:resources",
+      "//brave/components/brave_wallet_ui/page:brave_wallet_page_generated",
+      "//brave/components/brave_wallet_ui/panel:brave_wallet_panel_generated",
     ]
+  }
+
+  if (ethereum_remote_client_enabled && !is_android && !is_ios) {
+    sources += [
+      "webui/ethereum_remote_client/ethereum_remote_client_ui.cc",
+      "webui/ethereum_remote_client/ethereum_remote_client_ui.h",
+    ]
+    deps += [ "//brave/browser/ui/webui/ethereum_remote_client:ethereum_remote_client_page_generated" ]
   }
 
   if (enable_ftx) {

@@ -13,14 +13,13 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/observer_list_threadsafe.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_constants.h"
+#include "brave/components/brave_wallet/browser/brave_wallet_provider_events_observer.h"
 #include "url/gurl.h"
 
-namespace content {
-class BrowserContext;
-}  // namespace content
-
 namespace network {
+class SharedURLLoaderFactory;
 class SimpleURLLoader;
 }  // namespace network
 
@@ -28,7 +27,9 @@ namespace brave_wallet {
 
 class EthJsonRpcController {
  public:
-  EthJsonRpcController(content::BrowserContext* context, Network network);
+  EthJsonRpcController(
+      Network network,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~EthJsonRpcController();
 
   using URLRequestCallback =
@@ -61,6 +62,10 @@ class EthJsonRpcController {
   GURL GetNetworkURL() const;
   void SetNetwork(Network network);
   void SetCustomNetwork(const GURL& provider_url);
+
+  void AddObserver(BraveWalletProviderEventsObserver* observer);
+  void RemoveObserver(BraveWalletProviderEventsObserver* observer);
+
   // Returns the chain ID for a network or an empty string if no standard
   // chain ID is defined for the specified network.
   static std::string GetChainIDFromNetwork(Network network);
@@ -88,10 +93,12 @@ class EthJsonRpcController {
       const std::string& body,
       const std::map<std::string, std::string>& headers);
 
-  content::BrowserContext* context_;
   GURL network_url_;
   SimpleURLLoaderList url_loaders_;
   Network network_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  scoped_refptr<base::ObserverListThreadSafe<BraveWalletProviderEventsObserver>>
+      observers_;
 };
 
 }  // namespace brave_wallet

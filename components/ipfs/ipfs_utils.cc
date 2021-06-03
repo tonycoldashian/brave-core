@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/feature_list.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "brave/components/ipfs/features.h"
@@ -20,6 +21,7 @@
 #include "content/public/browser/browser_context.h"
 #include "extensions/common/url_pattern.h"
 #include "net/base/url_util.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
 
 namespace {
@@ -30,6 +32,12 @@ GURL AppendLocalPort(const std::string& port) {
   replacements.SetPortStr(port);
   return gateway.ReplaceComponents(replacements);
 }
+
+// RegEx to validate the node name:
+// go-ipfs_v0.9.0-rc1_windows-amd64 - valid
+// go-ipfs_v0.9.0_windows-amd64 - valid
+constexpr char kExecutableRegEx[] =
+    "go-ipfs_v(\\d+\\.\\d+\\.\\d+)(-rc\\d+)?\\_\\w+-amd64";
 
 // Valid CID multibase prefix, "code" character
 // from https://github.com/multiformats/multibase/blob/master/multibase.csv
@@ -101,6 +109,18 @@ bool IsDefaultGatewayURL(const GURL& url, content::BrowserContext* context) {
          (HasIPFSPath(url) ||
           url.DomainIs(std::string("ipfs.") + gateway_host) ||
           url.DomainIs(std::string("ipns.") + gateway_host));
+}
+
+bool IsAPIGateway(const GURL& url, version_info::Channel channel) {
+  if (!url.is_valid())
+    return false;
+  auto api_origin = ipfs::GetAPIServer(channel).GetOrigin();
+  if (api_origin == url)
+    return true;
+  if (net::IsLocalhost(api_origin) && net::IsLocalhost(url)) {
+    return api_origin.port() == url.port();
+  }
+  return false;
 }
 
 bool IsLocalGatewayURL(const GURL& url) {
@@ -299,6 +319,39 @@ GURL ResolveWebUIFilesLocation(const std::string& directory,
 bool IsIpfsMenuEnabled(content::BrowserContext* browser_context) {
   return ipfs::IsIpfsEnabled(browser_context) &&
          ipfs::IsLocalGatewayConfigured(browser_context);
+}
+
+// Extracts Address and PeerID from peer connection strings like:
+// /ip4/104.131.131.82/udp/4001/quic/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ
+// /p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ
+// QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ
+bool ParsePeerConnectionString(const std::string& value,
+                               std::string* id,
+                               std::string* address) {
+  if (!id || !address)
+    return false;
+  std::vector<std::string> parts = base::SplitStringUsingSubstr(
+      value, "/p2p/", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::string extracted_id = (parts.size() == 2) ? parts[1] : value;
+  std::string extracted_address =
+      (parts.size() == 2) ? parts[0] : std::string();
+
+  bool valid_cid = IsValidCID(extracted_id);
+  // For compatibility we allow PeerIDs started from 1,
+  // like 12D3KooWBdmLJjhpgJ9KZgLM3f894ff9xyBfPvPjFNn7MKJpyrC2
+  // only if p2p is present
+  bool legacy_peer_id = (!extracted_id.empty() && !extracted_address.empty() &&
+                         extracted_id.at(0) == '1');
+  bool valid = valid_cid || legacy_peer_id;
+  if (valid) {
+    *id = extracted_id;
+    *address = extracted_address;
+  }
+  return valid;
+}
+
+bool IsValidNodeFilename(const std::string& filename) {
+  return RE2::FullMatch(filename, kExecutableRegEx);
 }
 
 }  // namespace ipfs

@@ -41,13 +41,13 @@
   <div class="flex" hidden="[[localNodeLaunched]]">
     <div class="settings-row">
       <div class="flex cr-padded-text">
-          <div>$i18n{ipfsKeysNodeNotLaunched}</div>
+          <div>$i18n{ipfsNodeNotLaunched}</div>
           <div class="secondary error-text" hidden="[[!localNodeLaunchError_]]">
-            $i18nRaw{ipfsKeysNodeLaunchError}
+            $i18nRaw{ipfsNodeLaunchError}
           </div>
       </div>
       <cr-button on-click="onStartNodeKeyTap_" disabled=[[!launchNodeButtonEnabled_]]>
-        $i18n{ipfsKeysStartNode}
+        $i18n{ipfsStartNode}
       </cr-button>
     </div>
   </div>
@@ -55,25 +55,29 @@
     <div class="settings-row">
       <div class="flex cr-padded-text">
           $i18n{ipfsKeysListTitle}
+          <div class="secondary error-text" id="key-import-error" hidden="[[!importKeysError_]]">
+          </div>
       </div>
       <cr-button on-click="onAddKeyTap_" >
         $i18n{add}
       </cr-button>
     </div>
     <div class="flex" id="listContainer">
-      <iron-list items="[[keys_]]" class="flex"
+      <iron-list items="[[keys_]]" class="flex" id="keysList"
           preserve-focus risk-selection>
         <template>
-          <div class="settings-box">
-            <div class="flex cr-padded-text">
-              <div>{{item.name}}</div>
-              <div class="secondary">{{item.value}}</div>
+          <div>
+            <div class="settings-box">
+              <div class="flex cr-padded-text">
+                <div>{{item.name}}</div>
+                <div class="secondary">{{item.value}}</div>
+              </div>
+              <cr-icon-button class="icon-delete-gray"
+                  on-click="onKeyDeleteTapped_"
+                  itemName=[[item.name]]
+                  hidden="[[isDefaultKey_(item.name)]]">
+              </cr-icon-button>
             </div>
-            <cr-icon-button class="icon-delete-gray"
-                on-click="onKeyDeleteTapped_"
-                itemName=[[item.name]]
-                hidden="[[isDefaultKey_(item.name)]]">
-            </cr-icon-button>
           </div>
         </template>
       </iron-list>

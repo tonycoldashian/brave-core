@@ -9,6 +9,8 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+namespace brave_wallet {
+
 class BraveWalletService;
 
 class BraveWalletServiceFactory : public BrowserContextKeyedServiceFactory {
@@ -26,8 +28,11 @@ class BraveWalletServiceFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context) const override;
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
+  bool ServiceIsCreatedWithBrowserContext() const override;
 
   DISALLOW_COPY_AND_ASSIGN(BraveWalletServiceFactory);
 };
+
+}  // namespace brave_wallet
 
 #endif  // BRAVE_BROWSER_BRAVE_WALLET_BRAVE_WALLET_SERVICE_FACTORY_H_

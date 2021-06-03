@@ -70,8 +70,8 @@ namespace brave {
 
 namespace {
 
-BraveReferralsService::ReferralInitializedCallback
-    g_testing_referral_initialized_callback;
+BraveReferralsService::ReferralInitializedCallback*
+    g_testing_referral_initialized_callback = nullptr;
 
 base::FilePath g_promo_file_path;
 
@@ -189,12 +189,17 @@ void BraveReferralsService::Start() {
   bool checked_for_promo_code_file =
       pref_service_->GetBoolean(kReferralCheckedForPromoCodeFile);
   std::string download_id = pref_service_->GetString(kReferralDownloadID);
-  if (!checked_for_promo_code_file && !has_initialized && download_id.empty())
+  if (!checked_for_promo_code_file && !has_initialized && download_id.empty()) {
+#if !defined(OS_ANDROID)
     task_runner_->PostTaskAndReplyWithResult(
-        FROM_HERE,
-        base::BindOnce(&ReadPromoCode, GetPromoCodeFileName()),
+        FROM_HERE, base::BindOnce(&ReadPromoCode, GetPromoCodeFileName()),
         base::BindOnce(&BraveReferralsService::OnReadPromoCodeComplete,
-                   weak_factory_.GetWeakPtr()));
+                       weak_factory_.GetWeakPtr()));
+
+#else
+    InitAndroidReferrer();
+#endif
+  }
 
   initialized_ = true;
 }
@@ -208,7 +213,7 @@ void BraveReferralsService::Stop() {
 
 // static
 void BraveReferralsService::SetReferralInitializedCallbackForTesting(
-    ReferralInitializedCallback referral_initialized_callback) {
+    ReferralInitializedCallback* referral_initialized_callback) {
   g_testing_referral_initialized_callback = referral_initialized_callback;
 }
 // static
@@ -342,7 +347,7 @@ void BraveReferralsService::OnReferralInitLoadComplete(
   if (initialization_timer_)
     initialization_timer_.reset();
   if (g_testing_referral_initialized_callback) {
-    g_testing_referral_initialized_callback.Run(download_id->GetString());
+    g_testing_referral_initialized_callback->Run(download_id->GetString());
   }
 
   const base::Value* offer_page_url = root.value->FindKey("offer_page_url");
@@ -354,10 +359,9 @@ void BraveReferralsService::OnReferralInitLoadComplete(
         ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false);
     open_url_params.extra_headers = FormatExtraHeaders(headers, gurl);
 #if defined(OS_ANDROID)
-    base::Callback<void(content::WebContents*)> callback =
-        base::Bind([](content::WebContents*) {});
     ServiceTabLauncher::GetInstance()->LaunchTab(
-        last_used_profile, open_url_params, callback);
+        last_used_profile, open_url_params,
+        base::BindOnce([](content::WebContents*) {}));
 #else
     chrome::ScopedTabbedBrowserDisplayer browser_displayer(last_used_profile);
     browser_displayer.browser()->OpenURL(open_url_params);
@@ -365,7 +369,7 @@ void BraveReferralsService::OnReferralInitLoadComplete(
   }
 
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DeletePromoCodeFile, GetPromoCodeFileName()));
+      FROM_HERE, base::BindOnce(&DeletePromoCodeFile, GetPromoCodeFileName()));
 }
 
 void BraveReferralsService::OnReferralFinalizationCheckLoadComplete(
@@ -422,7 +426,7 @@ void BraveReferralsService::OnReadPromoCodeComplete(
     // No referral code or it's the default, no point of reporting it.
     pref_service_->SetBoolean(kReferralInitialization, true);
     if (g_testing_referral_initialized_callback) {
-      g_testing_referral_initialized_callback.Run(std::string());
+      g_testing_referral_initialized_callback->Run(std::string());
     }
   }
 }
@@ -753,6 +757,23 @@ std::string BraveReferralsService::FormatExtraHeaders(
 
   return extra_headers;
 }
+
+#if defined(OS_ANDROID)
+void BraveReferralsService::InitAndroidReferrer() {
+  android_brave_referrer::InitReferrerCallback init_referrer_callback =
+      base::BindOnce(&BraveReferralsService::OnAndroidBraveReferrerReady,
+                     weak_factory_.GetWeakPtr());
+  android_brave_referrer_.InitReferrer(std::move(init_referrer_callback));
+}
+
+void BraveReferralsService::OnAndroidBraveReferrerReady() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce(&ReadPromoCode, GetPromoCodeFileName()),
+      base::BindOnce(&BraveReferralsService::OnReadPromoCodeComplete,
+                     weak_factory_.GetWeakPtr()));
+}
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 

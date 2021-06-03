@@ -11,7 +11,6 @@
 #include "brave/browser/ui/sidebar/sidebar_controller.h"
 #include "brave/browser/ui/sidebar/sidebar_service_factory.h"
 #include "brave/browser/ui/sidebar/sidebar_utils.h"
-#include "brave/browser/ui/views/sidebar/sidebar_button_view.h"
 #include "brave/browser/ui/views/sidebar/sidebar_item_add_button.h"
 #include "brave/browser/ui/views/sidebar/sidebar_items_scroll_view.h"
 #include "brave/components/sidebar/sidebar_service.h"
@@ -168,6 +167,14 @@ bool SidebarControlView::IsCommandIdChecked(int command_id) const {
          service->GetSidebarShowOption();
 }
 
+std::u16string SidebarControlView::GetTooltipTextFor(
+    const views::View* view) const {
+  if (view == sidebar_settings_view_)
+    return l10n_util::GetStringUTF16(IDS_SIDEBAR_SETTINGS_BUTTON_TOOLTIP);
+
+  return std::u16string();
+}
+
 void SidebarControlView::OnItemAdded(const sidebar::SidebarItem& item,
                                      int index,
                                      bool user_gesture) {
@@ -187,7 +194,7 @@ void SidebarControlView::AddChildViews() {
   sidebar_item_add_view_->set_context_menu_controller(this);
 
   sidebar_settings_view_ =
-      AddChildView(std::make_unique<SidebarButtonView>(nullptr));
+      AddChildView(std::make_unique<SidebarButtonView>(this));
   sidebar_settings_view_->SetCallback(
       base::BindRepeating(&SidebarControlView::OnButtonPressed,
                           base::Unretained(this), sidebar_settings_view_));
@@ -212,38 +219,6 @@ void SidebarControlView::UpdateItemAddButtonState() {
       !sidebar::CanAddCurrentActiveTabToSidebar(browser_)) {
     should_enable = false;
   }
-
-  SkColor button_base_color = SK_ColorWHITE;
-  SkColor button_disabled_color = SK_ColorWHITE;
-  if (const ui::ThemeProvider* theme_provider = GetThemeProvider()) {
-    button_base_color = theme_provider->GetColor(
-        BraveThemeProperties::COLOR_SIDEBAR_BUTTON_BASE);
-    button_disabled_color = theme_provider->GetColor(
-        BraveThemeProperties::COLOR_SIDEBAR_ADD_BUTTON_DISABLED);
-  }
-
-  // Update add button image based on enabled state.
-  sidebar_item_add_view_->SetImage(views::Button::STATE_NORMAL, nullptr);
-  sidebar_item_add_view_->SetImage(views::Button::STATE_DISABLED, nullptr);
-  sidebar_item_add_view_->SetImage(views::Button::STATE_HOVERED, nullptr);
-  sidebar_item_add_view_->SetImage(views::Button::STATE_PRESSED, nullptr);
-  auto& bundle = ui::ResourceBundle::GetSharedInstance();
-  if (should_enable) {
-    sidebar_item_add_view_->SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kSidebarAddItemIcon, button_base_color));
-    sidebar_item_add_view_->SetImage(
-        views::Button::STATE_HOVERED,
-        bundle.GetImageSkiaNamed(IDR_SIDEBAR_ITEM_ADD_FOCUSED));
-    sidebar_item_add_view_->SetImage(
-        views::Button::STATE_PRESSED,
-        bundle.GetImageSkiaNamed(IDR_SIDEBAR_ITEM_ADD_FOCUSED));
-  } else {
-    sidebar_item_add_view_->SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kSidebarAddItemIcon, button_disabled_color));
-  }
-
   sidebar_item_add_view_->SetEnabled(should_enable);
 }
 

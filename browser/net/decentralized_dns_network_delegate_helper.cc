@@ -39,13 +39,14 @@ int OnBeforeURLRequest_DecentralizedDnsPreRedirectWork(
   if (IsUnstoppableDomainsTLD(ctx->request_url) &&
       IsUnstoppableDomainsResolveMethodEthereum(
           g_browser_process->local_state())) {
-    auto* service = BraveWalletServiceFactory::GetInstance()->GetForContext(
-        ctx->browser_context);
+    auto* service =
+        brave_wallet::BraveWalletServiceFactory::GetInstance()->GetForContext(
+            ctx->browser_context);
     if (!service) {
       return net::OK;
     }
 
-    service->controller()->UnstoppableDomainsProxyReaderGetMany(
+    service->rpc_controller()->UnstoppableDomainsProxyReaderGetMany(
         kProxyReaderContractAddress, ctx->request_url.host(),
         std::vector<std::string>(std::begin(kRecordKeys),
                                  std::end(kRecordKeys)),

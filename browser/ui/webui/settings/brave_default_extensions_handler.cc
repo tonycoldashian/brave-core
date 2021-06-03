@@ -5,6 +5,7 @@
 
 #include "brave/browser/ui/webui/settings/brave_default_extensions_handler.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/flags_ui/flags_ui_constants.h"
@@ -41,8 +43,8 @@
 #include "brave/components/tor/pref_names.h"
 #endif
 
-#if BUILDFLAG(BRAVE_WALLET_ENABLED)
-#include "brave/components/brave_wallet/browser/brave_wallet_constants.h"
+#if BUILDFLAG(ETHEREUM_REMOTE_CLIENT_ENABLED)
+#include "brave/browser/ethereum_remote_client/ethereum_remote_client_constants.h"
 #endif
 
 #if BUILDFLAG(ENABLE_WIDEVINE)
@@ -57,6 +59,7 @@
 #if BUILDFLAG(IPFS_ENABLED)
 #include "brave/browser/ipfs/ipfs_service_factory.h"
 #include "brave/components/ipfs/ipfs_service.h"
+#include "brave/components/ipfs/keys/ipns_keys_manager.h"
 #include "brave/components/ipfs/pref_names.h"
 #endif
 
@@ -77,13 +80,29 @@ void BraveDefaultExtensionsHandler::RegisterMessages() {
   if (service) {
     ipfs_service_observer_.Observe(service);
   }
+  web_ui()->RegisterMessageCallback(
+      "notifyIpfsNodeStatus",
+      base::BindRepeating(&BraveDefaultExtensionsHandler::CheckIpfsNodeStatus,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setIPFSStorageMax",
+      base::BindRepeating(&BraveDefaultExtensionsHandler::SetIPFSStorageMax,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "importIpnsKey",
+      base::BindRepeating(&BraveDefaultExtensionsHandler::ImportIpnsKey,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "launchIPFSService",
+      base::BindRepeating(&BraveDefaultExtensionsHandler::LaunchIPFSService,
+                          base::Unretained(this)));
 #endif
 
   web_ui()->RegisterMessageCallback(
       "setWebTorrentEnabled",
       base::BindRepeating(&BraveDefaultExtensionsHandler::SetWebTorrentEnabled,
                           base::Unretained(this)));
-#if BUILDFLAG(BRAVE_WALLET_ENABLED)
+#if BUILDFLAG(ETHEREUM_REMOTE_CLIENT_ENABLED)
   web_ui()->RegisterMessageCallback(
       "setBraveWalletEnabled",
       base::BindRepeating(&BraveDefaultExtensionsHandler::SetBraveWalletEnabled,
@@ -102,19 +121,6 @@ void BraveDefaultExtensionsHandler::RegisterMessages() {
       "setMediaRouterEnabled",
       base::BindRepeating(&BraveDefaultExtensionsHandler::SetMediaRouterEnabled,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "setIPFSStorageMax",
-      base::BindRepeating(&BraveDefaultExtensionsHandler::SetIPFSStorageMax,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "launchIPFSService",
-      base::BindRepeating(&BraveDefaultExtensionsHandler::LaunchIPFSService,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "shutdownIPFSService",
-      base::BindRepeating(&BraveDefaultExtensionsHandler::ShutdownIPFSService,
-                          base::Unretained(this)));
-
   // TODO(petemill): If anything outside this handler is responsible for causing
   // restart-neccessary actions, then this should be moved to a generic handler
   // and the flag should be moved to somewhere more static / singleton-like.
@@ -162,25 +168,28 @@ void BraveDefaultExtensionsHandler::InitializePrefCallbacks() {
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(
       kBraveEnabledMediaRouter,
-      base::Bind(&BraveDefaultExtensionsHandler::OnMediaRouterEnabledChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &BraveDefaultExtensionsHandler::OnMediaRouterEnabledChanged,
+          base::Unretained(this)));
   pref_change_registrar_.Add(
       prefs::kEnableMediaRouter,
-      base::Bind(&BraveDefaultExtensionsHandler::OnMediaRouterEnabledChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &BraveDefaultExtensionsHandler::OnMediaRouterEnabledChanged,
+          base::Unretained(this)));
   local_state_change_registrar_.Init(g_browser_process->local_state());
 #if BUILDFLAG(ENABLE_TOR)
   local_state_change_registrar_.Add(
       tor::prefs::kTorDisabled,
-      base::Bind(&BraveDefaultExtensionsHandler::OnTorEnabledChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&BraveDefaultExtensionsHandler::OnTorEnabledChanged,
+                          base::Unretained(this)));
 #endif
 
 #if BUILDFLAG(ENABLE_WIDEVINE)
   local_state_change_registrar_.Add(
       kWidevineOptedIn,
-      base::Bind(&BraveDefaultExtensionsHandler::OnWidevineEnabledChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &BraveDefaultExtensionsHandler::OnWidevineEnabledChanged,
+          base::Unretained(this)));
 #endif
 }
 
@@ -385,45 +394,6 @@ void BraveDefaultExtensionsHandler::OnWidevineEnabledChanged() {
   }
 }
 
-void BraveDefaultExtensionsHandler::ShutdownIPFSService(
-    const base::ListValue* args) {
-  ipfs::IpfsService* service =
-      ipfs::IpfsServiceFactory::GetForContext(profile_);
-  if (!service) {
-    return;
-  }
-  if (service->IsDaemonLaunched())
-    service->ShutdownDaemon(base::NullCallback());
-}
-
-void BraveDefaultExtensionsHandler::LaunchIPFSService(
-    const base::ListValue* args) {
-  ipfs::IpfsService* service =
-      ipfs::IpfsServiceFactory::GetForContext(profile_);
-  if (!service) {
-    return;
-  }
-  if (!service->IsDaemonLaunched())
-    service->LaunchDaemon(base::NullCallback());
-}
-
-void BraveDefaultExtensionsHandler::SetIPFSStorageMax(
-    const base::ListValue* args) {
-  CHECK_EQ(args->GetSize(), 1U);
-  CHECK(profile_);
-  int storage_max_gb = 0;
-  args->GetInteger(0, &storage_max_gb);
-  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
-  prefs->SetInteger(kIpfsStorageMax, storage_max_gb);
-  ipfs::IpfsService* service =
-      ipfs::IpfsServiceFactory::GetForContext(profile_);
-  if (!service) {
-    return;
-  }
-  if (service->IsDaemonLaunched()) {
-    service->RestartDaemon();
-  }
-}
 
 void BraveDefaultExtensionsHandler::SetIPFSCompanionEnabled(
     const base::ListValue* args) {
@@ -459,7 +429,7 @@ void BraveDefaultExtensionsHandler::SetIPFSCompanionEnabled(
   }
 }
 
-#if BUILDFLAG(BRAVE_WALLET_ENABLED)
+#if BUILDFLAG(ETHEREUM_REMOTE_CLIENT_ENABLED)
 void BraveDefaultExtensionsHandler::SetBraveWalletEnabled(
     const base::ListValue* args) {
   CHECK_EQ(args->GetSize(), 1U);
@@ -509,21 +479,108 @@ void BraveDefaultExtensionsHandler::GetDecentralizedDnsResolveMethodList(
 }
 
 #if BUILDFLAG(IPFS_ENABLED)
-void BraveDefaultExtensionsHandler::OnIpfsLaunched(bool result, int64_t pid) {
-  if (!IsJavascriptAllowed())
+void BraveDefaultExtensionsHandler::LaunchIPFSService(
+    const base::ListValue* args) {
+  ipfs::IpfsService* service =
+      ipfs::IpfsServiceFactory::GetForContext(profile_);
+  if (!service) {
     return;
+  }
+  if (!service->IsDaemonLaunched())
+    service->LaunchDaemon(base::NullCallback());
+}
+
+void BraveDefaultExtensionsHandler::SetIPFSStorageMax(
+    const base::ListValue* args) {
+  CHECK_EQ(args->GetSize(), 1U);
+  CHECK(profile_);
+  int storage_max_gb = 0;
+  args->GetInteger(0, &storage_max_gb);
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  prefs->SetInteger(kIpfsStorageMax, storage_max_gb);
+  ipfs::IpfsService* service =
+      ipfs::IpfsServiceFactory::GetForContext(profile_);
+  if (!service) {
+    return;
+  }
+  if (service->IsDaemonLaunched()) {
+    service->RestartDaemon();
+  }
+}
+
+void BraveDefaultExtensionsHandler::FileSelected(const base::FilePath& path,
+                                                 int index,
+                                                 void* params) {
+  ipfs::IpfsService* service =
+      ipfs::IpfsServiceFactory::GetForContext(profile_);
+  if (!service)
+    return;
+  service->GetIpnsKeysManager()->ImportKey(
+      path, dialog_key_,
+      base::BindOnce(&BraveDefaultExtensionsHandler::OnKeyImported,
+                     weak_ptr_factory_.GetWeakPtr()));
+  select_file_dialog_.reset();
+  dialog_key_.clear();
+}
+
+void BraveDefaultExtensionsHandler::OnKeyImported(const std::string& key,
+                                                  const std::string& value,
+                                                  bool success) {
+  FireWebUIListener("brave-ipfs-key-imported", base::Value(key),
+                    base::Value(value), base::Value(success));
+}
+
+void BraveDefaultExtensionsHandler::FileSelectionCanceled(void* params) {
+  select_file_dialog_.reset();
+  dialog_key_.clear();
+}
+
+void BraveDefaultExtensionsHandler::ImportIpnsKey(const base::ListValue* args) {
+  CHECK_EQ(args->GetSize(), 1U);
+  CHECK(profile_);
+  std::string key_name;
+  args->GetString(0, &key_name);
+  auto* web_contents = web_ui()->GetWebContents();
+  select_file_dialog_ = ui::SelectFileDialog::Create(
+      this, std::make_unique<ChromeSelectFilePolicy>(web_contents));
+  if (!select_file_dialog_) {
+    VLOG(1) << "Export already in progress";
+    return;
+  }
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  const base::FilePath directory = profile->last_selected_directory();
+  gfx::NativeWindow parent_window = web_contents->GetTopLevelNativeWindow();
+  ui::SelectFileDialog::FileTypeInfo file_types;
+  file_types.allowed_paths = ui::SelectFileDialog::FileTypeInfo::NATIVE_PATH;
+  dialog_key_ = key_name;
+  select_file_dialog_->SelectFile(
+      ui::SelectFileDialog::SELECT_OPEN_FILE, std::u16string(), directory,
+      &file_types, 0, FILE_PATH_LITERAL("key"), parent_window, nullptr);
+}
+
+void BraveDefaultExtensionsHandler::CheckIpfsNodeStatus(
+    const base::ListValue* args) {
+  NotifyNodeStatus();
+}
+
+void BraveDefaultExtensionsHandler::NotifyNodeStatus() {
   ipfs::IpfsService* service =
       ipfs::IpfsServiceFactory::GetForContext(profile_);
   bool launched = service && service->IsDaemonLaunched();
   FireWebUIListener("brave-ipfs-node-status-changed", base::Value(launched));
 }
+
+void BraveDefaultExtensionsHandler::OnIpfsLaunched(bool result, int64_t pid) {
+  if (!IsJavascriptAllowed())
+    return;
+  NotifyNodeStatus();
+}
+
 void BraveDefaultExtensionsHandler::OnIpfsShutdown() {
   if (!IsJavascriptAllowed())
     return;
-  ipfs::IpfsService* service =
-      ipfs::IpfsServiceFactory::GetForContext(profile_);
-  bool launched = service && service->IsDaemonLaunched();
-  FireWebUIListener("brave-ipfs-node-status-changed", base::Value(launched));
+  NotifyNodeStatus();
 }
 void BraveDefaultExtensionsHandler::OnIpnsKeysLoaded(bool success) {
   if (!IsJavascriptAllowed())

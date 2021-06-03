@@ -58,7 +58,12 @@ bool TranslateIPFSURI(const GURL& url,
                       const GURL& gateway_url,
                       bool use_subdomain);
 bool IsIpfsMenuEnabled(content::BrowserContext* browser_context);
+bool IsValidNodeFilename(const std::string& filename);
 
+bool ParsePeerConnectionString(const std::string& value,
+                               std::string* id,
+                               std::string* address);
+bool IsAPIGateway(const GURL& url, version_info::Channel channel);
 }  // namespace ipfs
 
 #endif  // BRAVE_COMPONENTS_IPFS_IPFS_UTILS_H_
