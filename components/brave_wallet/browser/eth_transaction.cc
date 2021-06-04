@@ -13,6 +13,7 @@
 
 namespace brave_wallet {
 
+EthTransaction::EthTransaction() = default;
 EthTransaction::EthTransaction(const uint256_t& nonce,
                                const uint256_t& gas_price,
                                const uint256_t& gas_limit,
@@ -27,6 +28,7 @@ EthTransaction::EthTransaction(const uint256_t& nonce,
       data_(data),
       v_(0) {}
 
+EthTransaction::EthTransaction(const EthTransaction&) = default;
 EthTransaction::~EthTransaction() = default;
 
 std::vector<uint8_t> EthTransaction::GetMessageToSign(uint64_t chain_id) const {

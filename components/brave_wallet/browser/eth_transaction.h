@@ -18,12 +18,14 @@ FORWARD_DECLARE_TEST(EthTransactionTest, GetSignedTransaction);
 
 class EthTransaction {
  public:
+  EthTransaction();
   EthTransaction(const uint256_t& nonce,
                  const uint256_t& gas_price,
                  const uint256_t& gas_limit,
                  const EthAddress& to,
                  const uint256_t& value,
                  const std::vector<uint8_t> data);
+  EthTransaction(const EthTransaction&);
   ~EthTransaction();
 
   uint256_t nonce() const { return nonce_; }
@@ -32,6 +34,10 @@ class EthTransaction {
   EthAddress to() const { return to_; }
   uint256_t value() const { return value_; }
   std::vector<uint8_t> data() const { return data_; }
+
+  void set_nonce(uint256_t nonce) { nonce_ = nonce; }
+  void set_gas_price(uint256_t gas_price) { gas_price_ = gas_price; }
+  void set_gas_limit(uint256_t gas_limit) { gas_limit_ = gas_limit; }
 
   // return
   // keccack(rlp([nonce, gasPrice, gasLimit, to, value, data, chainID, 0, 0])
