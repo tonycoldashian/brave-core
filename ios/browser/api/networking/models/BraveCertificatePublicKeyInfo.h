@@ -28,7 +28,7 @@ OBJC_EXPORT
 @property(nonatomic, assign, readonly) NSUInteger keyBytesSize;
 @property(nonatomic, assign, readonly) NSUInteger exponent;
 @property(nonatomic, assign, readonly) NSUInteger keySizeInBits;
-@property(nonatomic, assign, readonly) BraveKeyUsage keyUsage;
+@property(nonatomic, assign, readonly) BravePublicKeyUsage keyUsage;
 @end
 
 NS_ASSUME_NONNULL_END

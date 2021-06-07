@@ -11,7 +11,14 @@ source_set("networking") {
 
   cflags = [
     "-DBRAVE_CORE",
+    "-fobjc-weak",
+    "-fobjc-abi-version=2",
+    "-fobjc-legacy-dispatch",
+    "-Wno-objc-property-synthesis",
+    "-Wno-sign-compare",
   ]
+
+  ldflags = [ "-Wl,-no_compact_unwind,-rpath,/usr/lib/swift,-rpath,@executable_path/../Frameworks" ]
 
   sources = [
     "brave_certificate_model.h",
@@ -20,9 +27,9 @@ source_set("networking") {
 
   deps = [
     "common",
-    "models",
-    "models/extensions:general_extensions",
-    "utils",
+    "//base",
+    "//net",
+    "//third_party/abseil-cpp:absl",
     "//third_party/boringssl",
   ]
 

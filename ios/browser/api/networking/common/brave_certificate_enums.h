@@ -11,10 +11,11 @@
 typedef NS_OPTIONS(NSUInteger, BravePublicKeyUsage) {
   BravePublicKeyUsage_INVALID = 1 << 0,
   BravePublicKeyUsage_ENCRYPT = 1 << 1,
-  BravePublicKeyUsage_VERIFY  = 1 << 2,
-  BravePublicKeyUsage_WRAP    = 1 << 3,
-  BravePublicKeyUsage_DERIVE  = 1 << 4,
-  BravePublicKeyUsage_ANY     = 1 << 5
+  BravePublicKeyUsage_SIGN    = 1 << 2,
+  BravePublicKeyUsage_VERIFY  = 1 << 3,
+  BravePublicKeyUsage_WRAP    = 1 << 4,
+  BravePublicKeyUsage_DERIVE  = 1 << 5,
+  BravePublicKeyUsage_ANY     = 1 << 6
 };
 
 typedef NS_OPTIONS(NSUInteger, BraveKeyUsage) {

@@ -25,6 +25,7 @@
     _nistCurveName = [[NSString alloc] init];
     _parameters = [[NSString alloc] init];
     _keyHexEncoded = [[NSString alloc] init];
+    _keyBytesSize = 0;
     
     // Sometimes a key cannot be "decoded"
     // but you can still use X509_get_X509_PUBKEY to get its raw form
