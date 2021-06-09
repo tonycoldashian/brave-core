@@ -43,7 +43,6 @@
 #include "brave/components/brave_ads/browser/ads_service.h"
 #include "brave/components/brave_ads/browser/buildflags/buildflags.h"
 #include "brave/components/brave_rewards/browser/android_util.h"
-#include "brave/components/brave_rewards/browser/diagnostic_log.h"
 #include "brave/components/brave_rewards/browser/logging.h"
 #include "brave/components/brave_rewards/browser/rewards_notification_service.h"
 #include "brave/components/brave_rewards/browser/rewards_notification_service_impl.h"
@@ -100,8 +99,6 @@ static const unsigned int kRetriesCountOnNetworkChange = 1;
 namespace {
 
 const int kDiagnosticLogMaxVerboseLevel = 6;
-const int kDiagnosticLogKeepNumLines = 20000;
-const int kDiagnosticLogMaxFileSize = 10 * (1024 * 1024);
 const char pref_prefix[] = "brave.rewards";
 
 std::string URLMethodToRequestType(ledger::type::UrlMethod method) {
@@ -324,16 +321,16 @@ RewardsServiceImpl::RewardsServiceImpl(Profile* profile)
       publisher_state_path_(profile_->GetPath().Append(kPublisher_state)),
       publisher_info_db_path_(profile->GetPath().Append(kPublisher_info_db)),
       publisher_list_path_(profile->GetPath().Append(kPublishers_list)),
-      diagnostic_log_(
-          new DiagnosticLog(profile_->GetPath().Append(kDiagnosticLogPath),
-                            kDiagnosticLogMaxFileSize,
-                            kDiagnosticLogKeepNumLines)),
       notification_service_(new RewardsNotificationServiceImpl(profile)),
       next_timer_id_(0) {
   // Set up the rewards data source
   content::URLDataSource::Add(profile_,
                               std::make_unique<BraveRewardsSource>(profile_));
   ready_ = std::make_unique<base::OneShotEvent>();
+
+  CreateRewardsLoggerOnTaskRunner(
+      profile_->GetPath().Append(kDiagnosticLogPath),
+      logger_.BindNewPipeAndPassReceiver(), file_task_runner_);
 
   if (base::FeatureList::IsEnabled(features::kVerboseLoggingFeature))
     persist_log_level_ = kDiagnosticLogMaxVerboseLevel;
@@ -1408,7 +1405,7 @@ void RewardsServiceImpl::OnStopLedgerForCompleteReset(
     const ledger::type::Result result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   profile_->GetPrefs()->ClearPrefsWithPrefixSilently(pref_prefix);
-  diagnostic_log_->Delete(base::BindOnce(
+  logger_->DeleteFile(base::BindOnce(
       &RewardsServiceImpl::OnDiagnosticLogDeletedForCompleteReset, AsWeakPtr(),
       std::move(callback)));
 }
@@ -2270,8 +2267,8 @@ void RewardsServiceImpl::WriteDiagnosticLog(const std::string& file,
     return;
   }
 
-  diagnostic_log_->Write(
-      message, base::Time::Now(), file, line, verbose_level,
+  logger_->WriteMessage(
+      message, file, line, verbose_level,
       base::BindOnce(&RewardsServiceImpl::OnDiagnosticLogWritten, AsWeakPtr()));
 }
 
@@ -2282,9 +2279,9 @@ void RewardsServiceImpl::OnDiagnosticLogWritten(const bool success) {
 void RewardsServiceImpl::LoadDiagnosticLog(
       const int num_lines,
       LoadDiagnosticLogCallback callback) {
-  diagnostic_log_->ReadLastNLines(
-      num_lines, base::BindOnce(&RewardsServiceImpl::OnDiagnosticLogLoaded,
-                                AsWeakPtr(), std::move(callback)));
+  logger_->ReadTail(num_lines,
+                    base::BindOnce(&RewardsServiceImpl::OnDiagnosticLogLoaded,
+                                   AsWeakPtr(), std::move(callback)));
 }
 
 void RewardsServiceImpl::OnDiagnosticLogLoaded(
@@ -2295,7 +2292,7 @@ void RewardsServiceImpl::OnDiagnosticLogLoaded(
 
 void RewardsServiceImpl::ClearDiagnosticLog(
     ClearDiagnosticLogCallback callback) {
-  diagnostic_log_->Delete(
+  logger_->DeleteFile(
       base::BindOnce(&RewardsServiceImpl::OnDiagnosticLogCleared, AsWeakPtr(),
                      std::move(callback)));
 }
@@ -3265,7 +3262,7 @@ void RewardsServiceImpl::WalletDisconnected(const std::string& wallet_type) {
 }
 
 void RewardsServiceImpl::DeleteLog(ledger::ResultCallback callback) {
-  diagnostic_log_->Delete(
+  logger_->DeleteFile(
       base::BindOnce(&RewardsServiceImpl::OnDiagnosticLogDeleted, AsWeakPtr(),
                      std::move(callback)));
 }

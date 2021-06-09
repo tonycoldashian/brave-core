@@ -1,3 +1,5 @@
+import("//mojo/public/tools/bindings/mojom.gni")
+
 source_set("features") {
   sources = [
     "features.cc",
@@ -15,5 +17,13 @@ source_set("common") {
     "url_constants.h",
   ]
 
-  deps = [ ":features" ]
+  deps = [
+    ":features",
+    ":mojom",
+  ]
+}
+
+mojom("mojom") {
+  sources = [ "brave_rewards.mojom" ]
+  deps = [ "//mojo/public/mojom/base" ]
 }

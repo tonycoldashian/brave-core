@@ -1,0 +1,21 @@
+module brave_rewards.mojom;
+
+// Provides access to the Rewards diagnostic log text file available on the
+// rewards-internals page.
+interface RewardsLogger {
+
+  // Reads the specified number of lines from the end of the log file.
+  ReadTail(int32 lines) => (string content);
+
+  // Reads the entire log file into memory.
+  ReadFile() => (string content);
+
+  // Writes an entry into the log file. Lines at the beginning of file may be
+  // automatically removed in order to maintain a maximum file size.
+  WriteMessage(string message, string location, int32 line, int32 level)
+      => (bool success);
+
+  // Deletes the log file.
+  DeleteFile() => (bool success);
+
+};
