@@ -44,6 +44,7 @@ type Props = {
 function Container (props: Props) {
   const [view, setView] = React.useState<NavTypes>('crypto')
   const [inputValue, setInputValue] = React.useState<string>('')
+  const [hasPasswordError, setHasPasswordError] = React.useState<boolean>(false)
 
   // In the future these will be actual paths
   // for example wallet/rewards
@@ -63,11 +64,18 @@ function Container (props: Props) {
     props.walletPageActions.walletBackupComplete()
   }
 
+  // Need to wire up restore wallet
+  const restoreWallet = (phrase: string, password: string) => {
+    // Logic here to restore wallet and set password
+  }
+
   const passwordProvided = (password: string) => {
     props.walletPageActions.createWallet({ password })
   }
 
+  // Need to wire up incorrect password logic
   const unlockWallet = () => {
+    // Logic here to setHassPasswordError if password was incorrect
     props.walletActions.unlockWallet({ password: inputValue })
   }
 
@@ -85,6 +93,7 @@ function Container (props: Props) {
 
   const handlePasswordChanged = (value: string) => {
     setInputValue(value)
+    setHasPasswordError(false)
   }
 
   const recoveryPhrase = (props.page.mnemonic || '').split(' ')
@@ -95,6 +104,7 @@ function Container (props: Props) {
           recoveryPhrase={recoveryPhrase}
           onPasswordProvided={passwordProvided}
           onSubmit={completeWalletSetup}
+          onRestore={restoreWallet}
         />
       </WalletPageLayout>
     )
@@ -115,6 +125,7 @@ function Container (props: Props) {
                 onSubmit={unlockWallet}
                 disabled={inputValue === ''}
                 onPasswordChanged={handlePasswordChanged}
+                hasPasswordError={hasPasswordError}
               />
             ) : (
               <>

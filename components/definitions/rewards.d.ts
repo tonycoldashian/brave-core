@@ -77,7 +77,6 @@ declare namespace Rewards {
       walletRecoveryStatus: number | null
       walletServerProblem: boolean
       verifyOnboardingDisplayed?: boolean
-      onlyAnonWallet?: boolean
     }
   }
 
@@ -225,9 +224,10 @@ declare namespace Rewards {
     shouldAllowAdsSubdivisionTargeting: boolean
     adsUIEnabled: boolean
     adsIsSupported: boolean
-    adsEstimatedPendingRewards: number
-    adsNextPaymentDate: string
+    adsNextPaymentDate: number
     adsReceivedThisMonth: number
+    adsEarningsThisMonth: number
+    adsEarningsLastMonth: number
   }
 
   export enum RewardsType {

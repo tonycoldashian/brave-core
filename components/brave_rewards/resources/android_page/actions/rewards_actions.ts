@@ -135,10 +135,7 @@ export const onPendingContributions = (list: Rewards.PendingContribution[]) =>
     list
   })
 
-export const onStatement = (data: {adsEstimatedPendingRewards: number, adsNextPaymentDate: string, adsReceivedThisMonth: number}) =>
-  action(types.ON_STATEMENT, {
-    data
-  })
+export const onStatement = (data: any) => action(types.ON_STATEMENT, { data })
 
 export const getStatement = () => action(types.GET_STATEMENT)
 
@@ -175,12 +172,6 @@ export const getBalance = () => action(types.GET_BALANCE)
 export const onBalance = (status: number, balance: Rewards.Balance) => action(types.ON_BALANCE, {
   status,
   balance
-})
-
-export const onlyAnonWallet = () => action(types.ONLY_ANON_WALLET)
-
-export const onOnlyAnonWallet = (only: boolean) => action(types.ON_ONLY_ANON_WALLET, {
-  only
 })
 
 export const onInitialized = (result: boolean) => action(types.ON_INITIALIZED, {

@@ -18,7 +18,7 @@ import { recoveryPhrase } from './mock-data/user-accounts'
 export default {
   title: 'Wallet/Desktop',
   argTypes: {
-    onboarding: { control: { type: 'boolean', onboard: false } },
+    onboarding: { control: { type: 'boolean', onboard: true } },
     locked: { control: { type: 'boolean', lock: false } }
   }
 }
@@ -31,6 +31,8 @@ export const _DesktopWalletConcept = (args: { onboarding: boolean, locked: boole
   const [needsBackup, setNeedsBackup] = React.useState<boolean>(true)
   const [showBackup, setShowBackup] = React.useState<boolean>(false)
   const [inputValue, setInputValue] = React.useState<string>('')
+  const [hasRestoreError, setHasRestoreError] = React.useState<boolean>(false)
+  const [hasPasswordError, setHasPasswordError] = React.useState<boolean>(false)
 
   // In the future these will be actual paths
   // for example wallet/rewards
@@ -52,7 +54,11 @@ export const _DesktopWalletConcept = (args: { onboarding: boolean, locked: boole
   }
 
   const unlockWallet = () => {
-    setWalletLocked(false)
+    if (inputValue !== 'password') {
+      setHasPasswordError(true)
+    } else {
+      setWalletLocked(false)
+    }
   }
 
   const lockWallet = () => {
@@ -60,6 +66,7 @@ export const _DesktopWalletConcept = (args: { onboarding: boolean, locked: boole
   }
 
   const handlePasswordChanged = (value: string) => {
+    setHasPasswordError(false)
     setInputValue(value)
   }
 
@@ -69,6 +76,14 @@ export const _DesktopWalletConcept = (args: { onboarding: boolean, locked: boole
 
   const onHideBackup = () => {
     setShowBackup(false)
+  }
+
+  const onRestore = (phrase: string, password: string) => {
+    if (JSON.stringify(phrase.split(' ')) === JSON.stringify(recoveryPhrase)) {
+      completeWalletSetup(true)
+    } else {
+      setHasRestoreError(true)
+    }
   }
 
   return (
@@ -81,13 +96,19 @@ export const _DesktopWalletConcept = (args: { onboarding: boolean, locked: boole
       <WalletSubViewLayout>
         {needsOnboarding ?
           (
-            <Onboarding recoveryPhrase={recoveryPhrase} onSubmit={completeWalletSetup} onPasswordProvided={passwordProvided} />
+            <Onboarding
+              recoveryPhrase={recoveryPhrase}
+              onSubmit={completeWalletSetup}
+              onPasswordProvided={passwordProvided}
+              onRestore={onRestore}
+              hasRestoreError={hasRestoreError}
+            />
           ) : (
             <>
               {view === 'crypto' ? (
                 <>
                   {walletLocked ? (
-                    <LockScreen onSubmit={unlockWallet} disabled={inputValue === ''} onPasswordChanged={handlePasswordChanged} />
+                    <LockScreen hasPasswordError={hasPasswordError} onSubmit={unlockWallet} disabled={inputValue === ''} onPasswordChanged={handlePasswordChanged} />
                   ) : (
                     <>
                       {showBackup ? (
@@ -121,7 +142,7 @@ export const _DesktopWalletConcept = (args: { onboarding: boolean, locked: boole
 }
 
 _DesktopWalletConcept.args = {
-  onboarding: false,
+  onboarding: true,
   locked: false
 }
 

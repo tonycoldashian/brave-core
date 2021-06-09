@@ -143,7 +143,6 @@ declare namespace NewTab {
     enabledAds: boolean
     promotions: Promotion[]
     parameters: RewardsParameters
-    onlyAnonWallet: boolean
     totalContribution: number
   }
 
@@ -253,8 +252,7 @@ declare namespace NewTab {
   }
 
   export interface AdsAccountStatement {
-    estimatedPendingRewards: number
-    nextPaymentDate: string
+    nextPaymentDate: number
     adsReceivedThisMonth: number
     earningsThisMonth: number
     earningsLastMonth: number

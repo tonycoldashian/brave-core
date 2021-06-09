@@ -59,8 +59,13 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.brave_stats.BraveStatsUtil;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge;
+import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataFragmentAdvanced;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
+import org.chromium.chrome.browser.compositor.layouts.Layout;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
+import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityComponent;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.informers.BraveAndroidSyncDisabledInformer;
@@ -156,16 +161,6 @@ public abstract class BraveActivity<C extends ChromeActivityComponent>
     private static final List<String> yandexRegions =
             Arrays.asList("AM", "AZ", "BY", "KG", "KZ", "MD", "RU", "TJ", "TM", "UZ");
 
-    public final class DialogOption {
-        public static final int CLEAR_HISTORY = 0;
-        public static final int CLEAR_COOKIES_AND_SITE_DATA = 1;
-        public static final int CLEAR_CACHE = 2;
-        public static final int CLEAR_PASSWORDS = 3;
-        public static final int CLEAR_FORM_DATA = 4;
-        public static final int CLEAR_SITE_SETTINGS = 5;
-        public static final int NUM_ENTRIES = 6;
-    }
-
     public BraveActivity() {
         // Disable key checker to avoid asserts on Brave keys in debug
         SharedPreferencesManager.getInstance().disableKeyCheckerForTesting();
@@ -216,10 +211,8 @@ public abstract class BraveActivity<C extends ChromeActivityComponent>
         }
 
         if (isClearBrowsingDataOnExit()) {
-            List<Integer> dataTypes = Arrays.asList(DialogOption.CLEAR_HISTORY,
-                    DialogOption.CLEAR_COOKIES_AND_SITE_DATA, DialogOption.CLEAR_CACHE,
-                    DialogOption.CLEAR_PASSWORDS, DialogOption.CLEAR_FORM_DATA,
-                    DialogOption.CLEAR_SITE_SETTINGS);
+            List<Integer> dataTypes = Arrays.asList(
+                    BrowsingDataType.HISTORY, BrowsingDataType.COOKIES, BrowsingDataType.CACHE);
 
             int[] dataTypesArray = CollectionUtil.integerListToIntArray(new ArrayList<>(dataTypes));
 
@@ -817,6 +810,13 @@ public abstract class BraveActivity<C extends ChromeActivityComponent>
 
         editor.putLong(BravePreferenceKeys.BRAVE_MILLISECONDS_NAME, milliSeconds);
         editor.apply();
+    }
+
+    public void hideOverview(LayoutManagerChrome layoutManager) {
+        Layout activeLayout = layoutManager.getActiveLayout();
+        if (activeLayout instanceof StackLayout) {
+            ((StackLayout) activeLayout).commitOutstandingModelState(LayoutManagerImpl.time());
+        }
     }
 
     @NativeMethods

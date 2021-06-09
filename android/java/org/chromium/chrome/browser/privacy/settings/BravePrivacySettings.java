@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.privacy.settings;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
@@ -142,6 +143,9 @@ public class BravePrivacySettings extends PrivacySettings {
         mUstoppableDomains = (Preference) findPreference(PREF_UNSTOPPABLE_DOMAINS);
         mUstoppableDomains.setOnPreferenceChangeListener(this);
 
+        mIpfsGatewayPref = (ChromeSwitchPreference) findPreference(PREF_IPFS_GATEWAY);
+        mIpfsGatewayPref.setOnPreferenceChangeListener(this);
+
         mBlockCrosssiteCookies =
                 (BraveDialogPreference) findPreference(PREF_BLOCK_CROSS_SITE_COOKIES);
         mBlockCrosssiteCookies.setOnPreferenceChangeListener(this);
@@ -189,8 +193,6 @@ public class BravePrivacySettings extends PrivacySettings {
         mSocialBlockingLinkedin.setOnPreferenceChangeListener(this);
 
         mWebrtcPolicy = (ChromeBasePreference) findPreference(PREF_WEBRTC_POLICY);
-
-        updatePreferences();
 
         removePreferenceIfPresent(PREF_AD_BLOCK);
         // removePreferenceIfPresent(PREF_IPFS_GATEWAY);
@@ -323,7 +325,7 @@ public class BravePrivacySettings extends PrivacySettings {
     @Override
     public void onResume() {
         super.onResume();
-        updatePreferences();
+        new Handler().post(() -> updatePreferences());
     }
 
     private void updatePreferences() {
@@ -340,13 +342,15 @@ public class BravePrivacySettings extends PrivacySettings {
         String getNoScriptControlType =
                 BravePrefServiceBridge.getInstance().getNoScriptControlType();
 
+        SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
+
         if (getNoScriptControlType.equals(BraveShieldsContentSettings.BLOCK_RESOURCE)) {
             mBlockScriptsPref.setChecked(true);
         } else {
             mBlockScriptsPref.setChecked(false);
         }
 
-        if (cosmeticFiltering.equals(BraveShieldsContentSettings.AGGRESSIVE)) {
+        if (cosmeticFiltering.equals(BraveShieldsContentSettings.BLOCK_THIRDPARTY_RESOURCE)) {
             mAdsTrakersBlockPref.setCheckedIndex(0);
             mAdsTrakersBlockPref.setSummary(
                     getActivity().getResources().getString(R.string.block_trackers_ads_option_1));
@@ -364,7 +368,7 @@ public class BravePrivacySettings extends PrivacySettings {
             mBlockCrosssiteCookies.setCheckedIndex(0);
             mBlockCrosssiteCookies.setSummary(
                     getActivity().getResources().getString(R.string.block_cookies_option_1));
-        } else if (cookiesBlockType.equals(BraveShieldsContentSettings.DEFAULT)) {
+        } else if (cookiesBlockType.equals(BraveShieldsContentSettings.BLOCK_THIRDPARTY_RESOURCE)) {
             mBlockCrosssiteCookies.setCheckedIndex(1);
             mBlockCrosssiteCookies.setSummary(
                     getActivity().getResources().getString(R.string.block_cross_site_cookies));
@@ -411,6 +415,9 @@ public class BravePrivacySettings extends PrivacySettings {
                 .setChecked(UserPrefs.get(Profile.getLastUsedRegularProfile()).getBoolean(BravePref.TOP_SITE_SUGGESTIONS_ENABLED));
         mAutocompleteBraveSuggestedSites.setChecked(
                 UserPrefs.get(Profile.getLastUsedRegularProfile()).getBoolean(BravePref.BRAVE_SUGGESTED_SITE_SUGGESTIONS_ENABLED));
+
+        mClearBrowsingDataOnExit.setChecked(
+                sharedPreferences.getBoolean(PREF_CLEAR_ON_EXIT, false));
     }
 
     private void removePreferenceIfPresent(String key) {
