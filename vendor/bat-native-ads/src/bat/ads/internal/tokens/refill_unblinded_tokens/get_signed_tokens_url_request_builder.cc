@@ -34,7 +34,9 @@ UrlRequestPtr GetSignedTokensUrlRequestBuilder::Build() {
 ///////////////////////////////////////////////////////////////////////////////
 
 std::string GetSignedTokensUrlRequestBuilder::BuildUrl() const {
-  return base::StringPrintf("%s/v1/confirmation/token/%s?nonce=%s",
+  const std::string kGetSignedTokensUrlMask =
+      base::StringPrintf("%%s%s%%s?nonce=%%s", kGetSignedTokensUrlPath);
+  return base::StringPrintf(kGetSignedTokensUrlMask.c_str(),
                             confirmations::server::GetHost().c_str(),
                             wallet_.id.c_str(), nonce_.c_str());
 }

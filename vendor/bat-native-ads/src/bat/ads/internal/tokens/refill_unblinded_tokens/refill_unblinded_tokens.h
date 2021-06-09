@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/strings/stringprintf.h"
 #include "bat/ads/internal/account/wallet/wallet_info.h"
 #include "bat/ads/internal/backoff_timer.h"
 #include "bat/ads/internal/privacy/tokens/token_generator_interface.h"
@@ -35,15 +36,17 @@ class RefillUnblindedTokens {
 
  private:
   WalletInfo wallet_;
-
-  std::string public_key_;
-
   std::string nonce_;
+
+  std::set<std::string> confirmation_public_keys_;
 
   std::vector<Token> tokens_;
   std::vector<BlindedToken> blinded_tokens_;
 
   void Refill();
+
+  void GetIssuers();
+  void OnGetIssuers(const UrlResponse& url_response);
 
   void RequestSignedTokens();
   void OnRequestSignedTokens(const UrlResponse& url_response);

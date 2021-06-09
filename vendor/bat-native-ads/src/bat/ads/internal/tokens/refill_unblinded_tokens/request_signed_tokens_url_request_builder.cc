@@ -19,6 +19,8 @@
 #include "bat/ads/internal/server/confirmations_server_util.h"
 #include "bat/ads/internal/server/via_header_util.h"
 
+#include <iostream>
+
 namespace ads {
 
 RequestSignedTokensUrlRequestBuilder::RequestSignedTokensUrlRequestBuilder(
@@ -27,6 +29,10 @@ RequestSignedTokensUrlRequestBuilder::RequestSignedTokensUrlRequestBuilder(
     : wallet_(wallet), blinded_tokens_(blinded_tokens) {
   DCHECK(wallet_.IsValid());
   DCHECK(!blinded_tokens_.empty());
+  std::cerr << "SIGNED TOKEN REQ" << std::endl;
+  for (const BlindedToken& token: blinded_tokens_) {
+    std::cerr << "BLINDED TOKEN: " << token.encode_base64() << std::endl;
+  }
 }
 
 RequestSignedTokensUrlRequestBuilder::~RequestSignedTokensUrlRequestBuilder() =
@@ -49,7 +55,9 @@ UrlRequestPtr RequestSignedTokensUrlRequestBuilder::Build() {
 ///////////////////////////////////////////////////////////////////////////////
 
 std::string RequestSignedTokensUrlRequestBuilder::BuildUrl() const {
-  return base::StringPrintf("%s/v1/confirmation/token/%s",
+  const std::string kRequestSignedTokensUrlMask =
+      base::StringPrintf("%%s%s%%s", kRequestSignedTokensUrlPath);
+  return base::StringPrintf(kRequestSignedTokensUrlMask.c_str(),
                             confirmations::server::GetHost().c_str(),
                             wallet_.id.c_str());
 }

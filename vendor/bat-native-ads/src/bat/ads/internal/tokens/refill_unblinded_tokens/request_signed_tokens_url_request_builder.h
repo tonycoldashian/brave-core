@@ -16,6 +16,8 @@
 
 namespace ads {
 
+const char kRequestSignedTokensUrlPath[] = "/v1/confirmation/token/";
+
 using challenge_bypass_ristretto::BlindedToken;
 
 class RequestSignedTokensUrlRequestBuilder : UrlRequestBuilder {

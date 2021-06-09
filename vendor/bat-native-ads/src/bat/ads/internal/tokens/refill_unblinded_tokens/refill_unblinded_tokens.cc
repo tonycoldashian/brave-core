@@ -21,9 +21,12 @@
 #include "bat/ads/internal/privacy/unblinded_tokens/unblinded_tokens.h"
 #include "bat/ads/internal/server/ads_server_util.h"
 #include "bat/ads/internal/time_formatting_util.h"
+#include "bat/ads/internal/tokens/refill_unblinded_tokens/get_issuers_url_request_builder.h"
 #include "bat/ads/internal/tokens/refill_unblinded_tokens/get_signed_tokens_url_request_builder.h"
 #include "bat/ads/internal/tokens/refill_unblinded_tokens/request_signed_tokens_url_request_builder.h"
 #include "net/http/http_status_code.h"
+
+#include <iostream>
 
 namespace ads {
 
@@ -79,19 +82,17 @@ void RefillUnblindedTokens::MaybeRefill(const WalletInfo& wallet) {
 
   wallet_ = wallet;
 
-  const CatalogIssuersInfo catalog_issuers =
-      ConfirmationsState::Get()->get_catalog_issuers();
-  if (!catalog_issuers.IsValid()) {
-    BLOG(0, "Failed to refill unblinded tokens due to missing catalog issuers");
+  // const CatalogIssuersInfo catalog_issuers =
+  //     ConfirmationsState::Get()->get_catalog_issuers();
+  // if (!catalog_issuers.IsValid()) {
+  //   BLOG(0, "Failed to refill unblinded tokens due to missing catalog issuers");
 
-    if (delegate_) {
-      delegate_->OnFailedToRefillUnblindedTokens();
-    }
+  //   if (delegate_) {
+  //     delegate_->OnFailedToRefillUnblindedTokens();
+  //   }
 
-    return;
-  }
-
-  public_key_ = catalog_issuers.public_key;
+  //   return;
+  // }
 
   Refill();
 }
@@ -106,13 +107,80 @@ void RefillUnblindedTokens::Refill() {
   is_processing_ = true;
 
   nonce_ = "";
+  confirmation_public_keys_.clear();
+
+  GetIssuers();
+}
+
+void RefillUnblindedTokens::GetIssuers() {
+  BLOG(1, "GetIssuers");
+  BLOG(2, base::StringPrintf("GET %s", kGetIssuersUrlPath));
+
+  GetIssuersUrlRequestBuilder url_request_builder;
+  UrlRequestPtr url_request = url_request_builder.Build();
+  BLOG(5, UrlRequestToString(url_request));
+  BLOG(7, UrlRequestHeadersToString(url_request));
+
+  auto callback = std::bind(&RefillUnblindedTokens::OnGetIssuers, this,
+                            std::placeholders::_1);
+  AdsClientHelper::Get()->UrlRequest(std::move(url_request), callback);
+}
+
+void RefillUnblindedTokens::OnGetIssuers(const UrlResponse& url_response) {
+  BLOG(1, "OnGetIssuers");
+
+  BLOG(6, UrlResponseToString(url_response));
+  BLOG(7, UrlResponseHeadersToString(url_response));
+
+  if (url_response.status_code != net::HTTP_OK) {
+    BLOG(0, "Failed to get issuers");
+    OnFailedToRefillUnblindedTokens(/* should_retry */ true);
+    return;
+  }
+
+  // Parse JSON response
+  base::Optional<base::Value> issuer_list =
+      base::JSONReader::Read(url_response.body);
+
+  if (!issuer_list || !issuer_list->is_list()) {
+    BLOG(3, "Failed to parse response: " << url_response.body);
+    OnFailedToRefillUnblindedTokens(/* should_retry */ false);
+    return;
+  }
+
+  for (const auto& value : issuer_list->GetList()) {
+    if (!value.is_dict()) {
+      BLOG(3, "Failed to parse response: " << url_response.body);
+      OnFailedToRefillUnblindedTokens(/* should_retry */ false);
+      return;
+    }
+
+    const base::Value* public_key_dict = value.FindPath("");
+    const std::string* public_key_name = public_key_dict->FindStringKey("name");
+
+    if (!public_key_name) {
+      continue;
+    }
+
+    if (*public_key_name != std::string("confirmations")) {
+      continue;
+    }
+
+    const base::Value* public_key_list = public_key_dict->FindListKey("publicKeys");
+    for (const auto& public_key : public_key_list->GetList()) {
+      if (!public_key.is_string()) {
+        continue;
+      }
+      confirmation_public_keys_.insert(public_key.GetString());
+    }
+  }
 
   RequestSignedTokens();
 }
 
 void RefillUnblindedTokens::RequestSignedTokens() {
   BLOG(1, "RequestSignedTokens");
-  BLOG(2, "POST /v1/confirmation/token/{payment_id}");
+  BLOG(2, base::StringPrintf("POST %s{payment_id}", kRequestSignedTokensUrlPath));
 
   const int count = CalculateAmountOfTokensToRefill();
   tokens_ = token_generator_->Generate(count);
@@ -124,6 +192,8 @@ void RefillUnblindedTokens::RequestSignedTokens() {
   UrlRequestPtr url_request = url_request_builder.Build();
   BLOG(5, UrlRequestToString(url_request));
   BLOG(7, UrlRequestHeadersToString(url_request));
+  std::cerr << "[!] DEBUG: " << UrlRequestToString(url_request) << std::endl;
+  std::cerr << "[!] DEBUG: " << UrlRequestHeadersToString(url_request) << std::endl;
 
   auto callback = std::bind(&RefillUnblindedTokens::OnRequestSignedTokens, this,
                             std::placeholders::_1);
@@ -161,13 +231,13 @@ void RefillUnblindedTokens::OnRequestSignedTokens(
   }
   nonce_ = *nonce;
 
-  // Get signed tokens
   GetSignedTokens();
 }
 
 void RefillUnblindedTokens::GetSignedTokens() {
   BLOG(1, "GetSignedTokens");
-  BLOG(2, "GET /v1/confirmation/token/{payment_id}?nonce={nonce}");
+  BLOG(2, base::StringPrintf("GET %s{payment_id}?nonce={nonce}",
+      kGetSignedTokensUrlPath));
 
   GetSignedTokensUrlRequestBuilder url_request_builder(wallet_, nonce_);
   UrlRequestPtr url_request = url_request_builder.Build();
@@ -216,11 +286,10 @@ void RefillUnblindedTokens::OnGetSignedTokens(const UrlResponse& url_response) {
   }
 
   // Validate public key
-  if (*public_key_base64 != public_key_) {
+  if (!confirmation_public_keys_.count(*public_key_base64)) {
     BLOG(0, "Response public key " << *public_key_base64
-                                   << " does not match "
-                                      "catalog issuers public key "
-                                   << public_key_);
+                                   << " does not match"
+                                      " any public key ");
     OnFailedToRefillUnblindedTokens(/* should_retry */ false);
     return;
   }
@@ -273,7 +342,7 @@ void RefillUnblindedTokens::OnGetSignedTokens(const UrlResponse& url_response) {
   if (privacy::ExceptionOccurred()) {
     BLOG(1, "Failed to verify and unblind tokens");
     BLOG(1, "  Batch proof: " << *batch_proof_base64);
-    BLOG(1, "  Public key: " << public_key_);
+    BLOG(1, "  Public key: " << public_key.encode_base64());
 
     OnFailedToRefillUnblindedTokens(/* should_retry */ false);
     return;

@@ -14,6 +14,8 @@
 
 namespace ads {
 
+const char kGetSignedTokensUrlPath[] = "/v1/confirmation/token/";
+
 class GetSignedTokensUrlRequestBuilder : UrlRequestBuilder {
  public:
   GetSignedTokensUrlRequestBuilder(const WalletInfo& wallet,
