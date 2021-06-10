@@ -11,7 +11,7 @@ namespace operational_profiling {
 namespace features {
 
 namespace {
-const char kFeatureName[] = "UserOperationalProfiling";
+const char kFeatureName[] = "FederatedLearningOperationalProfiling";
 
 const char kFieldTrialParameterCollectionSlotSizeInMinutes[] =
     "collection_slot_size_in_minutes";
@@ -22,7 +22,7 @@ const char kFieldTrialParameterSimulateLocalTrainingStepDurationInMinutes[] =
 const int kDefaultSimulateLocalTrainingStepDurationInMinutes = 5;
 
 const char kFieldTrialParameterEphemeralIDLifetimeInDays[] =
-    "ephemeral_ID_lifetime_in_days";
+    "ephemeral_id_lifetime_in_days";
 const int kDefaultEphemeralIDLifetimeInDays = 30;
 
 }  // namespace

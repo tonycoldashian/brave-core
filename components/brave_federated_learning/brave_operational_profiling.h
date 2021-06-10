@@ -17,8 +17,10 @@
 class PrefRegistrySimple;
 
 namespace network {
+
 class SharedURLLoaderFactory;
 class SimpleURLLoader;
+
 }  // namespace network
 
 namespace brave {
@@ -45,11 +47,11 @@ class BraveOperationalProfiling {
   void LoadPrefs();
   void LoadParams();
 
-  std::string BuildTraceCollectionPayload() const;
+  std::string BuildPayload() const;
   int GetCurrentCollectionSlot() const;
   std::string GetPlatformIdentifier();
 
-  void reuseOrRefreshEphemeralId();
+  void MaybeResetEphemeralId();
 
   PrefService* pref_service_;
   GURL operational_profiling_endpoint_;
@@ -59,12 +61,12 @@ class BraveOperationalProfiling {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
-  int ephemeral_id_lifetime_;
-  base::Time ephemeral_id_expiration_;
+  int ephemeral_id_lifetime_in_days_;
+  base::Time ephemeral_id_expiration_time_;
   int current_collected_slot_;
   int last_checked_slot_;
-  int collection_slot_size_;
-  int fake_update_duration_;
+  int collection_slot_size_in_minutes_;
+  int simulated_local_training_step_duration_in_minutes_;
   std::string ephemeral_id_;
   std::string platform_;
 };

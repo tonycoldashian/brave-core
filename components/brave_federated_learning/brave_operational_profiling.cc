@@ -28,8 +28,8 @@ namespace {
 static constexpr char federatedLearningUrl[] = "https://fl.bravesoftware.com/";
 
 constexpr char kLastCheckedSlotPrefName[] = "brave.federated.last_checked_slot";
-constexpr char kEphemeralIDPrefName[] = "brave.federated.ephemeral_id";
-constexpr char kEphemeralIDExpirationPrefName[] =
+constexpr char kEphemeralIdPrefName[] = "brave.federated.ephemeral_id";
+constexpr char kEphemeralIdExpirationPrefName[] =
     "brave.federated.ephemeral_id_expiration";
 
 net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotationTag() {
@@ -69,55 +69,58 @@ BraveOperationalProfiling::~BraveOperationalProfiling() {}
 void BraveOperationalProfiling::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(kLastCheckedSlotPrefName, -1);
-  registry->RegisterStringPref(kEphemeralIDPrefName, {});
-  registry->RegisterTimePref(kEphemeralIDExpirationPrefName, base::Time());
+  registry->RegisterStringPref(kEphemeralIdPrefName, {});
+  registry->RegisterTimePref(kEphemeralIdExpirationPrefName, base::Time());
 }
 
 void BraveOperationalProfiling::Start() {
   DCHECK(!simulate_local_training_step_timer_);
   DCHECK(!collection_slot_periodic_timer_);
 
-  LoadPrefs();
+  LoadParams();
 
   simulate_local_training_step_timer_ =
       std::make_unique<base::RetainingOneShotTimer>();
   simulate_local_training_step_timer_->Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(fake_update_duration_ * 60), this,
-      &BraveOperationalProfiling::OnSimulateLocalTrainingStepTimerFired);
+      FROM_HERE,
+      base::TimeDelta::FromSeconds(
+          simulated_local_training_step_duration_in_minutes_ * 60),
+      this, &BraveOperationalProfiling::OnSimulateLocalTrainingStepTimerFired);
 
   collection_slot_periodic_timer_ = std::make_unique<base::RepeatingTimer>();
   collection_slot_periodic_timer_->Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(collection_slot_size_ * 60 / 2),
+      FROM_HERE,
+      base::TimeDelta::FromSeconds(collection_slot_size_in_minutes_ * 60 / 2),
       this, &BraveOperationalProfiling::OnCollectionSlotStartTimerFired);
 }
 
 void BraveOperationalProfiling::LoadParams() {
-  collection_slot_size_ =
+  collection_slot_size_in_minutes_ =
       operational_profiling::features::GetCollectionSlotSizeValue();
-  fake_update_duration_ = operational_profiling::features::
-      GetSimulateLocalTrainingStepDurationValue();
-  ephemeral_id_lifetime_ =
+  simulated_local_training_step_duration_in_minutes_ = operational_profiling::
+      features::GetSimulateLocalTrainingStepDurationValue();
+  ephemeral_id_lifetime_in_days_ =
       operational_profiling::features::GetEphemeralIdLifetime();
 
   operational_profiling_endpoint_ = GURL(federatedLearningUrl);
 
   LoadPrefs();
-  reuseOrRefreshEphemeralId();
+  MaybeResetEphemeralId();
 }
 
 void BraveOperationalProfiling::LoadPrefs() {
   platform_ = GetPlatformIdentifier();
   last_checked_slot_ = pref_service_->GetInteger(kLastCheckedSlotPrefName);
-  ephemeral_id_ = pref_service_->GetString(kEphemeralIDPrefName);
-  ephemeral_id_expiration_ =
-      pref_service_->GetTime(kEphemeralIDExpirationPrefName);
+  ephemeral_id_ = pref_service_->GetString(kEphemeralIdPrefName);
+  ephemeral_id_expiration_time_ =
+      pref_service_->GetTime(kEphemeralIdExpirationPrefName);
 }
 
 void BraveOperationalProfiling::SavePrefs() {
   pref_service_->SetInteger(kLastCheckedSlotPrefName, last_checked_slot_);
-  pref_service_->SetString(kEphemeralIDPrefName, ephemeral_id_);
-  pref_service_->SetTime(kEphemeralIDExpirationPrefName,
-                         ephemeral_id_expiration_);
+  pref_service_->SetString(kEphemeralIdPrefName, ephemeral_id_);
+  pref_service_->SetTime(kEphemeralIdExpirationPrefName,
+                         ephemeral_id_expiration_time_);
 }
 
 void BraveOperationalProfiling::OnCollectionSlotStartTimerFired() {
@@ -134,19 +137,18 @@ void BraveOperationalProfiling::SendCollectionSlot() {
     return;
   }
 
-  reuseOrRefreshEphemeralId();
+  MaybeResetEphemeralId();
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = operational_profiling_endpoint_;
-  resource_request->headers.SetHeader("X-Brave-Trace", "?1");
+  resource_request->headers.SetHeader("X-Brave-FL-Operational-Profile", "?1");
 
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->method = "POST";
 
   url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), GetNetworkTrafficAnnotationTag());
-  url_loader_->AttachStringForUpload(BuildTraceCollectionPayload(),
-                                     "application/base64");
+  url_loader_->AttachStringForUpload(BuildPayload(), "application/base64");
 
   url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
@@ -162,7 +164,7 @@ void BraveOperationalProfiling::OnUploadComplete(
   }
 }
 
-std::string BraveOperationalProfiling::BuildTraceCollectionPayload() const {
+std::string BraveOperationalProfiling::BuildPayload() const {
   base::Value root(base::Value::Type::DICTIONARY);
 
   root.SetKey("ephemeral_id", base::Value(ephemeral_id_));
@@ -179,21 +181,23 @@ int BraveOperationalProfiling::GetCurrentCollectionSlot() const {
   base::Time::Exploded now;
   base::Time::Now().LocalExplode(&now);
 
-  return (now.hour * 60 + now.minute) / collection_slot_size_;
+  return ((now.day_of_month - 1) * 24 * 60 + now.hour * 60 + now.minute) /
+         collection_slot_size_in_minutes_;
 }
 
 std::string BraveOperationalProfiling::GetPlatformIdentifier() {
   return brave_stats::GetPlatformIdentifier();
 }
 
-void BraveOperationalProfiling::reuseOrRefreshEphemeralId() {
+void BraveOperationalProfiling::MaybeResetEphemeralId() {
   const base::Time now = base::Time::Now();
-  if (ephemeral_id_.empty() ||
-      (!ephemeral_id_expiration_.is_null() && now > ephemeral_id_expiration_)) {
+  if (ephemeral_id_.empty() || (!ephemeral_id_expiration_time_.is_null() &&
+                                now > ephemeral_id_expiration_time_)) {
     ephemeral_id_ =
         base::ToUpperASCII(base::UnguessableToken::Create().ToString());
-    ephemeral_id_expiration_ = now + base::TimeDelta::FromSeconds(
-                                         ephemeral_id_lifetime_ * 24 * 60 * 60);
+    ephemeral_id_expiration_time_ =
+        now + base::TimeDelta::FromSeconds(ephemeral_id_lifetime_in_days_ * 24 *
+                                           60 * 60);
     SavePrefs();
   }
 }
