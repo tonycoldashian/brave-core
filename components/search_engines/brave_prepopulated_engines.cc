@@ -201,7 +201,7 @@ const PrepopulatedEngine brave_search = {
     "https://cdn.search.brave.com/serp/favicon.ico",
     "https://search.brave.com/search?q={searchTerms}",
     "UTF-8",
-    "https://search.brave.com/api/suggest?q={searchTerms}&rich=false",
+    "https://search.brave.com/api/suggest?q={searchTerms}",
     NULL,
     NULL,
     NULL,
