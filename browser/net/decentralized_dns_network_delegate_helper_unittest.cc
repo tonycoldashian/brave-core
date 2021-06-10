@@ -298,7 +298,7 @@ TEST_F(DecentralizedDnsNetworkDelegateHelperTest, EnsRedirectWork) {
                                      true, hash);
   EXPECT_EQ(
       brave_request_info->new_url_spec,
-      "ipns://bafybeihqoo7bq7uoaybzpfwegks33vw2h5adyl4t7joz3pofkr6h7yhdxq");
+      "ipns://bafybeihqoo7bq7uoaybzpfwegks33vw2h5adyl4t7joz3pofkr6h7yhdxq/");
 }
 
 }  // namespace decentralized_dns
