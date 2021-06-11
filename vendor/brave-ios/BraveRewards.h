@@ -33,3 +33,8 @@ FOUNDATION_EXPORT const unsigned char BraveRewardsVersionString[];
 #import <BraveRewards/brave_bookmarks_observer.h>
 #import <BraveRewards/brave_bookmarks_importer.h>
 #import <BraveRewards/brave_bookmarks_exporter.h>
+
+// Wallet
+#import <BraveRewards/eth_json_rpc_controller.h>
+#import <BraveRewards/hd_keyring.h>
+#import <BraveRewards/keyring_controller.h>
