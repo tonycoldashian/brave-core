@@ -1,4 +1,4 @@
-/* Copyright (c) 2020 The Brave Authors. All rights reserved.
+/* Copyright (c) 2021 The Brave Authors. All rights reserved.
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -21,9 +21,9 @@ const char kFieldTrialParameterSimulateLocalTrainingStepDurationInMinutes[] =
     "simulate_local_training_step_duration_in_minutes";
 const int kDefaultSimulateLocalTrainingStepDurationInMinutes = 5;
 
-const char kFieldTrialParameterEphemeralIDLifetimeInDays[] =
-    "ephemeral_id_lifetime_in_days";
-const int kDefaultEphemeralIDLifetimeInDays = 30;
+const char kFieldTrialParameterCollectionIDLifetimeInDays[] =
+    "collection_id_lifetime_in_days";
+const int kDefaultCollectionIDLifetimeInDays = 30;
 
 }  // namespace
 
@@ -48,10 +48,10 @@ int GetSimulateLocalTrainingStepDurationValue() {
       kDefaultSimulateLocalTrainingStepDurationInMinutes);
 }
 
-int GetEphemeralIdLifetime() {
+int GetCollectionIdLifetime() {
   return GetFieldTrialParamByFeatureAsInt(
-      kUserOperationalProfiling, kFieldTrialParameterEphemeralIDLifetimeInDays,
-      kDefaultEphemeralIDLifetimeInDays);
+      kUserOperationalProfiling, kFieldTrialParameterCollectionIDLifetimeInDays,
+      kDefaultCollectionIDLifetimeInDays);
 }
 
 }  // namespace features

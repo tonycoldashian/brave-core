@@ -8,27 +8,28 @@
 
 #include <memory>
 
-#include "base/timer/timer.h"
-#include "components/prefs/pref_service.h"
-#include "url/gurl.h"
+#include "base/memory/ref_counted.h"
 
 class PrefRegistrySimple;
+class PrefService;
 
 namespace network {
 class SharedURLLoaderFactory;
-class SimpleURLLoader;
 }  // namespace network
 
 namespace brave {
 
 class BraveOperationalProfiling;
 
-class BraveFederatedLearningService {
+class BraveFederatedLearningService final {
  public:
   explicit BraveFederatedLearningService(
       PrefService* pref_service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~BraveFederatedLearningService();
+  BraveFederatedLearningService(const BraveFederatedLearningService&) = delete;
+  BraveFederatedLearningService& operator=(
+      const BraveFederatedLearningService&) = delete;
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
@@ -39,7 +40,7 @@ class BraveFederatedLearningService {
   bool isAdsEnabled();
   bool isOperationalProfilingEnabled();
 
-  PrefService* pref_service_;
+  PrefService* local_state_;
   std::unique_ptr<BraveOperationalProfiling> operational_profiling_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 };

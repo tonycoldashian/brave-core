@@ -17,7 +17,7 @@ bool IsOperationalProfilingEnabled();
 
 int GetCollectionSlotSizeValue();
 int GetSimulateLocalTrainingStepDurationValue();
-int GetEphemeralIdLifetime();
+int GetCollectionIdLifetime();
 
 }  // namespace features
 }  // namespace operational_profiling

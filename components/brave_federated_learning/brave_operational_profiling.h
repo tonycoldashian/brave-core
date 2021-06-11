@@ -11,10 +11,13 @@
 
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "components/prefs/pref_service.h"
-#include "url/gurl.h"
 
 class PrefRegistrySimple;
+class PrefService;
+
+namespace net {
+class HttpResponseHeaders;
+}
 
 namespace network {
 
@@ -25,12 +28,15 @@ class SimpleURLLoader;
 
 namespace brave {
 
-class BraveOperationalProfiling {
+class BraveOperationalProfiling final {
  public:
-  explicit BraveOperationalProfiling(
+  BraveOperationalProfiling(
       PrefService* pref_service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~BraveOperationalProfiling();
+  BraveOperationalProfiling(const BraveOperationalProfiling&) = delete;
+  BraveOperationalProfiling& operator=(const BraveOperationalProfiling&) =
+      delete;
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
@@ -39,35 +45,29 @@ class BraveOperationalProfiling {
  private:
   void OnCollectionSlotStartTimerFired();
   void OnSimulateLocalTrainingStepTimerFired();
-  void OnUploadComplete(std::unique_ptr<std::string> response_body);
+  void OnUploadComplete(scoped_refptr<net::HttpResponseHeaders> headers);
 
   void SendCollectionSlot();
 
   void SavePrefs();
   void LoadPrefs();
-  void LoadParams();
 
   std::string BuildPayload() const;
   int GetCurrentCollectionSlot() const;
-  std::string GetPlatformIdentifier();
 
-  void MaybeResetEphemeralId();
+  void MaybeResetCollectionId();
 
-  PrefService* pref_service_;
-  GURL operational_profiling_endpoint_;
+  PrefService* local_state_;
   std::unique_ptr<base::RepeatingTimer> collection_slot_periodic_timer_;
   std::unique_ptr<base::RetainingOneShotTimer>
       simulate_local_training_step_timer_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
-  int ephemeral_id_lifetime_in_days_;
-  base::Time ephemeral_id_expiration_time_;
-  int current_collected_slot_;
-  int last_checked_slot_;
-  int collection_slot_size_in_minutes_;
-  int simulated_local_training_step_duration_in_minutes_;
-  std::string ephemeral_id_;
+  base::Time collection_id_expiration_time_;
+  int current_collected_slot_ = 0;
+  int last_checked_slot_ = 0;
+  std::string collection_id_;
   std::string platform_;
 };
 

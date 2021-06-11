@@ -1,5 +1,4 @@
 source_set("brave_federated_learning") {
-  check_includes = false
   sources = [
     "brave_federated_learning_service.cc",
     "brave_federated_learning_service.h",
@@ -15,11 +14,8 @@ source_set("brave_federated_learning") {
     "//brave/components/p3a:p3a",
     "//brave/components/version_info",
     "//brave/vendor/bat-native-ads",
-    "//chrome/common",
     "//components/metrics",
     "//components/prefs",
-    "//content/public/browser",
-    "//content/public/common",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
     "//url",
